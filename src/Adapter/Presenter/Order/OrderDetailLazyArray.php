@@ -33,7 +33,7 @@ use Currency;
 use HistoryController;
 use Order;
 use PrestaShop\PrestaShop\Adapter\Presenter\AbstractLazyArray;
-use PrestaShop\PrestaShop\Core\Localization\Locale;
+use PrestaShop\PrestaShop\Core\Localization\LocaleInterface;
 use PrestaShopBundle\Translation\TranslatorComponent;
 use PrestaShopException;
 use Tools;
@@ -41,7 +41,7 @@ use Tools;
 class OrderDetailLazyArray extends AbstractLazyArray
 {
     /**
-     * @var Locale
+     * @var LocaleInterface
      */
     private $locale;
 
@@ -232,7 +232,7 @@ class OrderDetailLazyArray extends AbstractLazyArray
                     ($order->getTaxCalculationMethod()) ? $shipping['shipping_cost_tax_excl']
                         : $shipping['shipping_cost_tax_incl'];
                 $orderShipping[$shippingId]['shipping_cost'] =
-                    ($shippingCost > 0) ? $this->locale->formatPrice($shippingCost, (Currency::getIsoCodeById((int) $order->id_currency)))
+                    ($shippingCost > 0) ? $this->locale->formatPrice($shippingCost, Currency::getIsoCodeById((int) $order->id_currency))
                         : $this->translator->trans('Free', [], 'Shop.Theme.Checkout');
 
                 $tracking_line = '-';

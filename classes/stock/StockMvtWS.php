@@ -28,6 +28,7 @@
  * Webservice entity for stock movements.
  *
  * @since 1.5.0
+ * @deprecated since 9.0 and will be removed in 10.0, this object model is no longer needed
  */
 class StockMvtWSCore extends ObjectModelCore
 {
@@ -231,7 +232,7 @@ class StockMvtWSCore extends ObjectModelCore
         parent::__construct($id, $id_lang, $id_shop);
 
         if ((int) $this->id != 0) {
-            $res = $this->getWebserviceObjectList('', (' AND ' . $this->def['primary'] . ' = ' . (int) $this->id), '', '', true);
+            $res = $this->getWebserviceObjectList('', ' AND ' . $this->def['primary'] . ' = ' . (int) $this->id, '', '', true);
             if (isset($res[0])) {
                 foreach ($this->tables_assoc as $key => $param) {
                     $this->{$key} = $res[0][$key];

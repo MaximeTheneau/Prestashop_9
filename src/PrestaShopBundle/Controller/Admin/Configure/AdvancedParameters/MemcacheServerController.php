@@ -27,10 +27,10 @@
 namespace PrestaShopBundle\Controller\Admin\Configure\AdvancedParameters;
 
 use PrestaShop\PrestaShop\Adapter\Cache\MemcacheServerManager;
+use PrestaShop\PrestaShop\Core\Security\Permission;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
-use PrestaShopBundle\Security\Annotation\AdminSecurity;
-use PrestaShopBundle\Security\Annotation\DemoRestricted;
-use PrestaShopBundle\Security\Voter\PageVoter;
+use PrestaShopBundle\Security\Attribute\AdminSecurity;
+use PrestaShopBundle\Security\Attribute\DemoRestricted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,23 +43,21 @@ class MemcacheServerController extends FrameworkBundleAdminController
     public const CONTROLLER_NAME = 'AdminPerformance';
 
     /**
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))", message="Access denied.")
-     *
      * @return JsonResponse
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))", message: 'Access denied.')]
     public function listAction()
     {
         return new JsonResponse($this->getMemcacheManager()->getServers());
     }
 
     /**
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))", message="Access denied.")
-     * @DemoRestricted(redirectRoute="admin_servers_test")
-     *
      * @param Request $request
      *
      * @return JsonResponse|\Symfony\Component\HttpFoundation\RedirectResponse
      */
+    #[DemoRestricted(redirectRoute: 'admin_servers_test')]
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))", message: 'Access denied.')]
     public function testAction(Request $request)
     {
         $queryValues = $request->query;
@@ -78,22 +76,21 @@ class MemcacheServerController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('create', request.get('_legacy_controller'))", message="Access denied.")
-     * @DemoRestricted(redirectRoute="admin_servers_test")
-     *
      * @param Request $request
      *
      * @return JsonResponse|\Symfony\Component\HttpFoundation\RedirectResponse
      */
+    #[DemoRestricted(redirectRoute: 'admin_servers_test')]
+    #[AdminSecurity("is_granted('create', request.get('_legacy_controller'))", message: 'Access denied.')]
     public function addAction(Request $request)
     {
         if (!in_array(
             $this->authorizationLevel($this::CONTROLLER_NAME),
             [
-                PageVoter::LEVEL_READ,
-                PageVoter::LEVEL_UPDATE,
-                PageVoter::LEVEL_CREATE,
-                PageVoter::LEVEL_DELETE,
+                Permission::LEVEL_READ,
+                Permission::LEVEL_UPDATE,
+                Permission::LEVEL_CREATE,
+                Permission::LEVEL_DELETE,
             ]
         )) {
             return new JsonResponse(
@@ -137,22 +134,21 @@ class MemcacheServerController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", message="Access denied.")
-     * @DemoRestricted(redirectRoute="admin_servers_test")
-     *
      * @param Request $request
      *
      * @return JsonResponse|\Symfony\Component\HttpFoundation\RedirectResponse
      */
+    #[DemoRestricted(redirectRoute: 'admin_servers_test')]
+    #[AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", message: 'Access denied.')]
     public function deleteAction(Request $request)
     {
         if (!in_array(
             $this->authorizationLevel($this::CONTROLLER_NAME),
             [
-                PageVoter::LEVEL_READ,
-                PageVoter::LEVEL_UPDATE,
-                PageVoter::LEVEL_CREATE,
-                PageVoter::LEVEL_DELETE,
+                Permission::LEVEL_READ,
+                Permission::LEVEL_UPDATE,
+                Permission::LEVEL_CREATE,
+                Permission::LEVEL_DELETE,
             ]
         )) {
             return new JsonResponse(

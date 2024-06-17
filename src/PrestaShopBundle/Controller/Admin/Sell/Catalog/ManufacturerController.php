@@ -63,8 +63,8 @@ use PrestaShop\PrestaShop\Core\Search\Filters\ManufacturerAddressFilters;
 use PrestaShop\PrestaShop\Core\Search\Filters\ManufacturerFilters;
 use PrestaShopBundle\Component\CsvResponse;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
-use PrestaShopBundle\Security\Annotation\AdminSecurity;
-use PrestaShopBundle\Security\Annotation\DemoRestricted;
+use PrestaShopBundle\Security\Attribute\AdminSecurity;
+use PrestaShopBundle\Security\Attribute\DemoRestricted;
 use PrestaShopBundle\Service\Grid\ResponseBuilder;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -79,10 +79,9 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Show manufacturers listing page.
      *
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
-     *
      * @return Response
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function indexAction(
         Request $request,
         ManufacturerFilters $manufacturerFilters,
@@ -100,16 +99,16 @@ class ManufacturerController extends FrameworkBundleAdminController
             'manufacturerGrid' => $this->presentGrid($manufacturerGrid),
             'manufacturerAddressGrid' => $this->presentGrid($manufacturerAddressGrid),
             'settingsTipMessage' => $this->getSettingsTipMessage(),
+            'layoutHeaderToolbarBtn' => $this->getManufacturerIndexToolbarButtons(),
         ]);
     }
 
     /**
      * Provides filters functionality
      *
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
-     *
      * @return RedirectResponse
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function searchAction(Request $request)
     {
         $gridDefinitionFactory = 'prestashop.core.grid.definition.factory.manufacturer';
@@ -133,12 +132,9 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Show & process manufacturer creation.
      *
-     * @AdminSecurity(
-     *     "is_granted('create', request.get('_legacy_controller'))"
-     * )
-     *
      * @return Response
      */
+    #[AdminSecurity("is_granted('create', request.get('_legacy_controller'))")]
     public function createAction(Request $request)
     {
         $manufacturerForm = $this->getFormBuilder()->getForm();
@@ -160,18 +156,18 @@ class ManufacturerController extends FrameworkBundleAdminController
             'help_link' => $this->generateSidebarLink($request->attributes->get('_legacy_controller')),
             'enableSidebar' => true,
             'manufacturerForm' => $manufacturerForm->createView(),
+            'layoutTitle' => $this->trans('New brand', 'Admin.Navigation.Menu'),
         ]);
     }
 
     /**
      * View single manufacturer details
      *
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
-     *
      * @param int $manufacturerId
      *
      * @return Response
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function viewAction(Request $request, $manufacturerId)
     {
         try {
@@ -187,26 +183,30 @@ class ManufacturerController extends FrameworkBundleAdminController
         }
 
         return $this->render('@PrestaShop/Admin/Sell/Catalog/Manufacturer/view.html.twig', [
-            'layoutTitle' => $viewableManufacturer->getName(),
             'viewableManufacturer' => $viewableManufacturer,
             'isStockManagementEnabled' => $this->getConfiguration()->get('PS_STOCK_MANAGEMENT'),
             'isAllShopContext' => $this->get('prestashop.adapter.shop.context')->isAllShopContext(),
             'enableSidebar' => true,
             'help_link' => $this->generateSidebarLink($request->attributes->get('_legacy_controller')),
+            'layoutHeaderToolbarBtn' => $this->getManufacturerViewToolbarButtons($manufacturerId),
+            'layoutTitle' => $this->trans(
+                'Brand %name%',
+                'Admin.Navigation.Menu',
+                [
+                    '%name%' => $viewableManufacturer->getName(),
+                ]
+            ),
         ]);
     }
 
     /**
      * Show & process manufacturer editing.
      *
-     * @AdminSecurity(
-     *     "is_granted('update', request.get('_legacy_controller'))"
-     * )
-     *
      * @param int $manufacturerId
      *
      * @return Response
      */
+    #[AdminSecurity("is_granted('update', request.get('_legacy_controller'))")]
     public function editAction(Request $request, $manufacturerId)
     {
         try {
@@ -241,19 +241,25 @@ class ManufacturerController extends FrameworkBundleAdminController
             'manufacturerForm' => $manufacturerForm->createView(),
             'manufacturerName' => $editableManufacturer->getName(),
             'logoImage' => $editableManufacturer->getLogoImage(),
+            'layoutTitle' => $this->trans(
+                'Editing brand %name%',
+                'Admin.Navigation.Menu',
+                [
+                    '%name%' => $editableManufacturer->getName(),
+                ]
+            ),
         ]);
     }
 
     /**
      * Deletes manufacturer
      *
-     * @AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", redirectRoute="admin_manufacturers_index")
-     * @DemoRestricted(redirectRoute="admin_manufacturers_index")
-     *
      * @param int|string $manufacturerId
      *
      * @return RedirectResponse
      */
+    #[DemoRestricted(redirectRoute: 'admin_manufacturers_index')]
+    #[AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", redirectRoute: 'admin_manufacturers_index')]
     public function deleteAction($manufacturerId)
     {
         try {
@@ -272,11 +278,10 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Deletes manufacturers on bulk action
      *
-     * @AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", redirectRoute="admin_manufacturers_index")
-     * @DemoRestricted(redirectRoute="admin_manufacturers_index")
-     *
      * @return RedirectResponse
      */
+    #[DemoRestricted(redirectRoute: 'admin_manufacturers_index')]
+    #[AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", redirectRoute: 'admin_manufacturers_index')]
     public function bulkDeleteAction(Request $request)
     {
         $manufacturerIds = $this->getBulkManufacturersFromRequest($request);
@@ -297,11 +302,10 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Enables manufacturers on bulk action
      *
-     * @AdminSecurity("is_granted('update', request.get('_legacy_controller'))", redirectRoute="admin_manufacturers_index")
-     * @DemoRestricted(redirectRoute="admin_manufacturers_index")
-     *
      * @return RedirectResponse
      */
+    #[DemoRestricted(redirectRoute: 'admin_manufacturers_index')]
+    #[AdminSecurity("is_granted('update', request.get('_legacy_controller'))", redirectRoute: 'admin_manufacturers_index')]
     public function bulkEnableAction(Request $request)
     {
         $manufacturerIds = $this->getBulkManufacturersFromRequest($request);
@@ -323,11 +327,10 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Disables manufacturers on bulk action
      *
-     * @AdminSecurity("is_granted('update', request.get('_legacy_controller'))", redirectRoute="admin_manufacturers_index")
-     * @DemoRestricted(redirectRoute="admin_manufacturers_index")
-     *
      * @return RedirectResponse
      */
+    #[DemoRestricted(redirectRoute: 'admin_manufacturers_index')]
+    #[AdminSecurity("is_granted('update', request.get('_legacy_controller'))", redirectRoute: 'admin_manufacturers_index')]
     public function bulkDisableAction(Request $request)
     {
         $manufacturerIds = $this->getBulkManufacturersFromRequest($request);
@@ -349,13 +352,12 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Toggles manufacturer status
      *
-     * @AdminSecurity("is_granted('update', request.get('_legacy_controller'))", redirectRoute="admin_manufacturers_index")
-     * @DemoRestricted(redirectRoute="admin_manufacturers_index")
-     *
      * @param int $manufacturerId
      *
      * @return RedirectResponse
      */
+    #[DemoRestricted(redirectRoute: 'admin_manufacturers_index')]
+    #[AdminSecurity("is_granted('update', request.get('_legacy_controller'))", redirectRoute: 'admin_manufacturers_index')]
     public function toggleStatusAction($manufacturerId)
     {
         try {
@@ -378,14 +380,10 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Export filtered manufacturers.
      *
-     * @AdminSecurity(
-     *     "is_granted('read', request.get('_legacy_controller')) && is_granted('update', request.get('_legacy_controller')) && is_granted('create', request.get('_legacy_controller')) && is_granted('delete', request.get('_legacy_controller'))",
-     *     redirectRoute="admin_manufacturers_index"
-     * )
-     * @DemoRestricted(redirectRoute="admin_manufacturers_index")
-     *
      * @return Response
      */
+    #[DemoRestricted(redirectRoute: 'admin_manufacturers_index')]
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller')) && is_granted('update', request.get('_legacy_controller')) && is_granted('create', request.get('_legacy_controller')) && is_granted('delete', request.get('_legacy_controller'))", redirectRoute: 'admin_manufacturers_index')]
     public function exportAction(ManufacturerFilters $filters)
     {
         $filters = new ManufacturerFilters(['limit' => null] + $filters->all());
@@ -418,24 +416,18 @@ class ManufacturerController extends FrameworkBundleAdminController
             ->setData($data)
             ->setHeadersData($headers)
             ->setFileName('brands_' . date('Y-m-d_His') . '.csv')
-            ;
+        ;
     }
 
     /**
      * Deletes manufacturer logo image.
-     *
-     * @AdminSecurity(
-     *     "is_granted('update', request.get('_legacy_controller'))",
-     *     message="You do not have permission to edit this.",
-     *     redirectRoute="admin_manufacturers_edit",
-     *     redirectQueryParamsToKeep={"manufacturerId"}
-     * )
      *
      * @param Request $request
      * @param int $manufacturerId
      *
      * @return RedirectResponse
      */
+    #[AdminSecurity("is_granted('update', request.get('_legacy_controller'))", message: 'You do not have permission to edit this.', redirectQueryParamsToKeep: ['manufacturerId'], redirectRoute: 'admin_manufacturers_edit')]
     public function deleteLogoImageAction(Request $request, int $manufacturerId): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('delete-logo-thumbnail', $request->request->get('_csrf_token'))) {
@@ -464,13 +456,12 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Deletes address
      *
-     * @AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", redirectRoute="admin_manufacturers_index")
-     * @DemoRestricted(redirectRoute="admin_manufacturers_index")
-     *
      * @param int $addressId
      *
      * @return RedirectResponse
      */
+    #[DemoRestricted(redirectRoute: 'admin_manufacturers_index')]
+    #[AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", redirectRoute: 'admin_manufacturers_index')]
     public function deleteAddressAction($addressId)
     {
         try {
@@ -489,14 +480,10 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Export filtered manufacturer addresses.
      *
-     * @AdminSecurity(
-     *     "is_granted('read', request.get('_legacy_controller')) && is_granted('update', request.get('_legacy_controller')) && is_granted('create', request.get('_legacy_controller')) && is_granted('delete', request.get('_legacy_controller'))",
-     *     redirectRoute="admin_manufacturers_index"
-     * )
-     * @DemoRestricted(redirectRoute="admin_manufacturers_index")
-     *
      * @return Response
      */
+    #[DemoRestricted(redirectRoute: 'admin_manufacturers_index')]
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller')) && is_granted('update', request.get('_legacy_controller')) && is_granted('create', request.get('_legacy_controller')) && is_granted('delete', request.get('_legacy_controller'))", redirectRoute: 'admin_manufacturers_index')]
     public function exportAddressAction(ManufacturerAddressFilters $filters)
     {
         $addressesGridFactory = $this->get('prestashop.core.grid.grid_factory.manufacturer_address');
@@ -530,17 +517,16 @@ class ManufacturerController extends FrameworkBundleAdminController
             ->setData($data)
             ->setHeadersData($headers)
             ->setFileName('address_' . date('Y-m-d_His') . '.csv')
-            ;
+        ;
     }
 
     /**
      * Deletes adresses in bulk action
      *
-     * @AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", redirectRoute="admin_manufacturers_index")
-     * @DemoRestricted(redirectRoute="admin_manufacturers_index")
-     *
      * @return RedirectResponse
      */
+    #[DemoRestricted(redirectRoute: 'admin_manufacturers_index')]
+    #[AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", redirectRoute: 'admin_manufacturers_index')]
     public function bulkDeleteAddressAction(Request $request)
     {
         $addressIds = $this->getBulkAddressesFromRequest($request);
@@ -561,18 +547,17 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Show & process address creation.
      *
-     * @AdminSecurity("is_granted('create', request.get('_legacy_controller'))")
-     *
      * @return Response
      */
+    #[AdminSecurity("is_granted('create', request.get('_legacy_controller'))")]
     public function createAddressAction(Request $request)
     {
         $addressFormBuilder = $this->getAddressFormBuilder();
         $addressFormHandler = $this->getAddressFormHandler();
 
         $formData = [];
-        if ($request->request->has('manufacturer_address') && isset($request->request->get('manufacturer_address')['id_country'])) {
-            $formCountryId = (int) $request->request->get('manufacturer_address')['id_country'];
+        if ($request->request->has('manufacturer_address') && isset($request->request->all('manufacturer_address')['id_country'])) {
+            $formCountryId = (int) $request->request->all('manufacturer_address')['id_country'];
             $formData['id_country'] = $formCountryId;
         }
 
@@ -597,7 +582,7 @@ class ManufacturerController extends FrameworkBundleAdminController
 
         return $this->render('@PrestaShop/Admin/Sell/Catalog/Manufacturer/Address/create.html.twig', [
             'enableSidebar' => true,
-            'layoutTitle' => $this->trans('Add new address', 'Admin.Orderscustomers.Feature'),
+            'layoutTitle' => $this->trans('New brand address', 'Admin.Navigation.Menu'),
             'addressForm' => $addressForm->createView(),
         ]);
     }
@@ -605,12 +590,11 @@ class ManufacturerController extends FrameworkBundleAdminController
     /**
      * Show & process address editing.
      *
-     * @AdminSecurity("is_granted('update', request.get('_legacy_controller'))")
-     *
      * @param int $addressId
      *
      * @return Response
      */
+    #[AdminSecurity("is_granted('update', request.get('_legacy_controller'))")]
     public function editAddressAction(Request $request, $addressId)
     {
         $addressId = (int) $addressId;
@@ -619,8 +603,8 @@ class ManufacturerController extends FrameworkBundleAdminController
         $addressFormHandler = $this->getAddressFormHandler();
 
         $formData = [];
-        if ($request->request->has('manufacturer_address') && isset($request->request->get('manufacturer_address')['id_country'])) {
-            $formCountryId = (int) $request->request->get('manufacturer_address')['id_country'];
+        if ($request->request->has('manufacturer_address') && isset($request->request->all('manufacturer_address')['id_country'])) {
+            $formCountryId = (int) $request->request->all('manufacturer_address')['id_country'];
             $formData['id_country'] = $formCountryId;
         }
 
@@ -651,7 +635,7 @@ class ManufacturerController extends FrameworkBundleAdminController
 
         return $this->render('@PrestaShop/Admin/Sell/Catalog/Manufacturer/Address/edit.html.twig', [
             'enableSidebar' => true,
-            'layoutTitle' => $this->trans('Brands', 'Admin.Catalog.Feature'),
+            'layoutTitle' => $this->trans('Editing brand address', 'Admin.Navigation.Menu'),
             'addressForm' => $addressForm->createView(),
             'address' => $editableAddress->getAddress(),
         ]);
@@ -706,8 +690,8 @@ class ManufacturerController extends FrameworkBundleAdminController
                 'Admin.Notifications.Error'
             ),
             MemoryLimitException::class => $this->trans(
-                    'Due to memory limit restrictions, this image cannot be loaded. Please increase your memory_limit value via your server\'s configuration settings.',
-                    'Admin.Notifications.Error'
+                'Due to memory limit restrictions, this image cannot be loaded. Please increase your memory_limit value via your server\'s configuration settings.',
+                'Admin.Notifications.Error'
             ),
             ImageUploadException::class => $this->trans(
                 'An error occurred while uploading the image.',
@@ -743,11 +727,7 @@ class ManufacturerController extends FrameworkBundleAdminController
      */
     private function getBulkManufacturersFromRequest(Request $request): array
     {
-        $manufacturerIds = $request->request->get('manufacturer_bulk');
-
-        if (!is_array($manufacturerIds)) {
-            return [];
-        }
+        $manufacturerIds = $request->request->all('manufacturer_bulk');
 
         foreach ($manufacturerIds as $i => $manufacturerId) {
             $manufacturerIds[$i] = (int) $manufacturerId;
@@ -761,11 +741,7 @@ class ManufacturerController extends FrameworkBundleAdminController
      */
     private function getBulkAddressesFromRequest(Request $request): array
     {
-        $addressIds = $request->request->get('manufacturer_address_bulk');
-
-        if (!is_array($addressIds)) {
-            return [];
-        }
+        $addressIds = $request->request->all('manufacturer_address_bulk');
 
         foreach ($addressIds as $i => $addressId) {
             $addressIds[$i] = (int) $addressId;
@@ -807,25 +783,61 @@ class ManufacturerController extends FrameworkBundleAdminController
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    private function getSettingsTipMessage(): string
+    private function getSettingsTipMessage()
     {
+        if ($this->getConfiguration()->get('PS_DISPLAY_MANUFACTURERS')) {
+            return null;
+        }
+
         $urlOpening = sprintf('<a href="%s">', $this->get('router')->generate('admin_preferences'));
         $urlEnding = '</a>';
-
-        if ($this->getConfiguration()->get('PS_DISPLAY_MANUFACTURERS')) {
-            return $this->trans(
-                'The display of your brands is enabled on your store. Go to %sShop Parameters > General%s to edit settings.',
-                'Admin.Catalog.Notification',
-                [$urlOpening, $urlEnding]
-            );
-        }
 
         return $this->trans(
             'The display of your brands is disabled on your store. Go to %sShop Parameters > General%s to edit settings.',
             'Admin.Catalog.Notification',
             [$urlOpening, $urlEnding]
         );
+    }
+
+    /**
+     * @return array
+     */
+    private function getManufacturerIndexToolbarButtons(): array
+    {
+        $toolbarButtons = [];
+
+        $toolbarButtons['add_manufacturer'] = [
+            'href' => $this->generateUrl('admin_manufacturers_create'),
+            'desc' => $this->trans('Add new brand', 'Admin.Catalog.Feature'),
+            'icon' => 'add_circle_outline',
+        ];
+
+        $toolbarButtons['add_manufacturer_address'] = [
+            'href' => $this->generateUrl('admin_manufacturer_addresses_create'),
+            'desc' => $this->trans('Add new brand address', 'Admin.Catalog.Feature'),
+            'icon' => 'add_circle_outline',
+        ];
+
+        return $toolbarButtons;
+    }
+
+    /**
+     * @param int $manufacturerId
+     *
+     * @return array
+     */
+    private function getManufacturerViewToolbarButtons(int $manufacturerId): array
+    {
+        $toolbarButtons = [];
+
+        $toolbarButtons['edit'] = [
+            'href' => $this->generateUrl('admin_manufacturers_edit', ['manufacturerId' => $manufacturerId]),
+            'desc' => $this->trans('Edit brand', 'Admin.Catalog.Feature'),
+            'icon' => 'mode_edit',
+        ];
+
+        return $toolbarButtons;
     }
 }

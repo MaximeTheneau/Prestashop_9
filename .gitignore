@@ -1,6 +1,6 @@
 # Cache, temp and personal files
 
-*.htaccess
+/.htaccess
 /.htpasswd
 *.log
 npm-debug.log.*
@@ -11,6 +11,7 @@ npm-debug.log.*
 
 # Cache
 /cache/*
+!/cache/.htaccess
 !/cache/cachefs/index.php
 !/cache/deprecated.txt
 !/cache/index.php
@@ -83,7 +84,6 @@ npm-debug.log.*
 tests/Resources/img/*
 tests/Resources/img/tmp/*
 tests/Resources/img/tmp/.gitkeep
-tests/Resources/img/s/.gitkeep
 !tests/Resources/download/.gitkeep
 tests/Resources/download/*
 tests/Unit/.phpunit.result.cache
@@ -142,7 +142,7 @@ config/defines_custom.inc.php
 config/settings.inc.php
 config/settings.old.php
 config/xml/*
-config/themes/*
+
 !config/xml/themes/default.xml
 themes/*/config/settings_*.json
 app/config/parameters.old.yml

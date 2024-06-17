@@ -27,7 +27,6 @@ use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use PrestaShop\PrestaShop\Core\Exception\CoreException;
 use PrestaShop\PrestaShop\Core\Feature\TokenInUrls;
 use PrestaShopBundle\Routing\Converter\LegacyUrlConverter;
-use PrestaShopBundle\Service\TransitionalBehavior\AdminPagePreferenceInterface;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
@@ -176,7 +175,7 @@ class LinkCore
             $params['id'] = $product->id;
         }
 
-        //Attribute equal to 0 or empty is useless, so we force it to null so that it won't be inserted in query parameters
+        // Attribute equal to 0 or empty is useless, so we force it to null so that it won't be inserted in query parameters
         if (empty($idProductAttribute)) {
             $idProductAttribute = null;
         }
@@ -236,7 +235,7 @@ class LinkCore
             $cats = [];
             foreach ($product->getParentCategories($idLang) as $cat) {
                 if (!in_array($cat['id_category'], Link::$category_disable_rewrite)) {
-                    //remove root and home category from the URL
+                    // remove root and home category from the URL
                     $cats[] = $cat['link_rewrite'];
                 }
             }
@@ -445,7 +444,7 @@ class LinkCore
         } elseif (is_int($category) || (is_string($category) && ctype_digit($category))) {
             $params['id'] = (int) $category;
         } else {
-            throw new \InvalidArgumentException('Invalid category parameter');
+            throw new InvalidArgumentException('Invalid category parameter');
         }
 
         if ((int) $params['id'] === 0) {
@@ -599,9 +598,9 @@ class LinkCore
 
         $dispatcher = Dispatcher::getInstance();
         if (!is_object($supplier)) {
-            if ($alias !== null &&
-                !$dispatcher->hasKeyword('supplier_rule', $idLang, 'meta_keywords', $idShop) &&
-                !$dispatcher->hasKeyword('supplier_rule', $idLang, 'meta_title', $idShop)
+            if ($alias !== null
+                && !$dispatcher->hasKeyword('supplier_rule', $idLang, 'meta_keywords', $idShop)
+                && !$dispatcher->hasKeyword('supplier_rule', $idLang, 'meta_title', $idShop)
             ) {
                 return $url . $dispatcher->createUrl(
                     'supplier_rule',
@@ -760,44 +759,6 @@ class LinkCore
 
         $routeName = '';
         switch ($controller) {
-            case 'AdminProducts':
-                // New architecture modification: temporary behavior to switch between old and new controllers.
-                /** @var AdminPagePreferenceInterface $pagePreference */
-                $pagePreference = $sfContainer->get('prestashop.core.admin.page_preference_interface');
-                $redirectLegacy = $pagePreference->getTemporaryShouldUseLegacyPage('product');
-                if (!$redirectLegacy) {
-                    if (array_key_exists('id_product', $sfRouteParams)) {
-                        if (array_key_exists('deleteproduct', $sfRouteParams)) {
-                            return $sfRouter->generate(
-                                'admin_product_unit_action',
-                                ['action' => 'delete', 'id' => $sfRouteParams['id_product']]
-                            );
-                        }
-                        //default: if (array_key_exists('updateproduct', $sfRouteParams))
-                        return $sfRouter->generate(
-                            'admin_product_form',
-                            ['id' => $sfRouteParams['id_product']]
-                        );
-                    }
-                    if (array_key_exists('submitFilterproduct', $sfRouteParams)) {
-                        $routeParams = [];
-                        if (array_key_exists('filter_column_sav_quantity', $sfRouteParams)) {
-                            $routeParams['quantity'] = $sfRouteParams['filter_column_sav_quantity'];
-                        }
-                        if (array_key_exists('filter_column_active', $sfRouteParams)) {
-                            $routeParams['active'] = $sfRouteParams['filter_column_active'];
-                        }
-
-                        return $sfRouter->generate('admin_product_catalog_filters', $routeParams);
-                    }
-
-                    return $sfRouter->generate('admin_product_catalog', $sfRouteParams);
-                } else {
-                    $params = array_merge($params, $sfRouteParams);
-                }
-
-                break;
-
             case 'AdminTranslations':
                 // In case of email body translations we want to get a link to legacy controller,
                 // in other cases - it's the migrated controller
@@ -846,7 +807,7 @@ class LinkCore
 
                 return $legacyUrlConverter->convertByParameters($conversionParameters);
             } catch (CoreException $e) {
-                //The url could not be converted so we fallback on legacy url
+                // The url could not be converted so we fallback on legacy url
             }
         }
 
@@ -882,7 +843,7 @@ class LinkCore
 
     /**
      * Used when you explicitly want to create a LEGACY admin link, this should be deprecated
-     * in 1.8.0.
+     * in 9.x
      *
      * @param string $controller
      * @param bool $withToken
@@ -911,7 +872,7 @@ class LinkCore
     public function getAdminBaseLink($idShop = null, $ssl = null, $relativeProtocol = false)
     {
         if (null === $ssl) {
-            $ssl = Configuration::get('PS_SSL_ENABLED') && Configuration::get('PS_SSL_ENABLED_EVERYWHERE');
+            $ssl = Configuration::get('PS_SSL_ENABLED');
         }
 
         if (Configuration::get('PS_MULTISHOP_FEATURE_ACTIVE')) {
@@ -919,7 +880,7 @@ class LinkCore
                 $idShop = $this->getMatchingUrlShopId();
             }
 
-            //Use the matching shop if present, or fallback on the default one
+            // Use the matching shop if present, or fallback on the default one
             if (null !== $idShop) {
                 $shop = new Shop($idShop);
             } else {
@@ -978,43 +939,50 @@ class LinkCore
 
     /**
      * Returns a link to a product image for display
-     * Note: the new image filesystem stores product images in subdirectories of img/p/.
+     * Note: image filesystem stores product images in subdirectories of img/p/.
      *
-     * @param string $name rewrite link of the image
-     * @param string $ids id part of the image filename - can be "id_product-id_image" (legacy support, recommended) or "id_image" (new)
+     * @param string $name Rewrite link of the image
+     * @param string|int $idImage numeric ID of product image or a name of default image like "fr-default"
      * @param string|null $type Image thumbnail name (small_default, medium_default, large_default, etc.)
      * @param string $extension What image extension should the link point to
      *
      * @return string
      */
-    public function getImageLink($name, $ids, $type = null, string $extension = 'jpg')
+    public function getImageLink($name, $idImage, $type = null, string $extension = 'jpg')
     {
-        $notDefault = false;
-        $psLegacyImages = Configuration::get('PS_LEGACY_IMAGES');
+        $type = ($type ? '-' . $type : '');
+        $idImage = (string) $idImage;
 
-        // legacy mode or default image
-        $theme = ((Shop::isFeatureActive() && file_exists(_PS_PRODUCT_IMG_DIR_ . $ids . ($type ? '-' . $type : '') . '-' . Context::getContext()->shop->theme_name . '.jpg')) ? '-' . Context::getContext()->shop->theme_name : '');
-        if (($psLegacyImages
-                && (file_exists(_PS_PRODUCT_IMG_DIR_ . $ids . ($type ? '-' . $type : '') . $theme . '.' . $extension)))
-            || ($notDefault = strpos($ids, 'default') !== false)) {
-            if ($this->allow && !$notDefault) {
-                $uriPath = __PS_BASE_URI__ . $ids . ($type ? '-' . $type : '') . $theme . '/' . $name . '.' . $extension;
-            } else {
-                $uriPath = _THEME_PROD_DIR_ . $ids . ($type ? '-' . $type : '') . $theme . '.' . $extension;
-            }
+        // Default image like "fr-default"
+        if (strpos($idImage, 'default') !== false) {
+            $theme = ((Shop::isFeatureActive() && file_exists(_PS_PRODUCT_IMG_DIR_ . $idImage . $type . '-' . Context::getContext()->shop->theme_name . '.jpg')) ? '-' . Context::getContext()->shop->theme_name : '');
+            $uriPath = _THEME_PROD_DIR_ . $idImage . $type . $theme . '.' . $extension;
+
+        // Regular image with numeric ID
         } else {
-            // if ids if of the form id_product-id_image, we want to extract the id_image part
-            $splitIds = explode('-', $ids);
-            $idImage = (isset($splitIds[1]) ? $splitIds[1] : $splitIds[0]);
-            $theme = ((Shop::isFeatureActive() && file_exists(_PS_PRODUCT_IMG_DIR_ . Image::getImgFolderStatic($idImage) . $idImage . ($type ? '-' . $type : '') . '-' . (int) Context::getContext()->shop->theme_name . '.jpg')) ? '-' . Context::getContext()->shop->theme_name : '');
+            // We will still process the old way of requesting images in a form of productID-imageID, but notify developers
+            if (strpos($idImage, '-')) {
+                $idImage = explode('-', $idImage)[1];
+                if (_PS_MODE_DEV_) {
+                    trigger_error(
+                        'Passing image identifier in the old format is deprecated, use only image ID. This fallback will be removed in next major.',
+                        E_USER_DEPRECATED
+                    );
+                }
+            }
+
+            $theme = ((Shop::isFeatureActive() && file_exists(_PS_PRODUCT_IMG_DIR_ . Image::getImgFolderStatic($idImage) . $idImage . $type . '-' . (int) Context::getContext()->shop->theme_name . '.jpg')) ? '-' . Context::getContext()->shop->theme_name : '');
+
+            // If friendly URLs are enabled
             if ($this->allow) {
-                $uriPath = __PS_BASE_URI__ . $idImage . ($type ? '-' . $type : '') . $theme . '/' . $name . '.' . $extension;
+                $uriPath = __PS_BASE_URI__ . $idImage . $type . $theme . '/' . $name . '.' . $extension;
+            // If friendly URLs are disabled
             } else {
-                $uriPath = _THEME_PROD_DIR_ . Image::getImgFolderStatic($idImage) . $idImage . ($type ? '-' . $type : '') . $theme . '.' . $extension;
+                $uriPath = _THEME_PROD_DIR_ . Image::getImgFolderStatic($idImage) . $idImage . $type . $theme . '.' . $extension;
             }
         }
 
-        return $this->protocol_content . Tools::getMediaServer($uriPath) . $uriPath;
+        return $this->getMediaLink($uriPath);
     }
 
     /**
@@ -1040,7 +1008,7 @@ class LinkCore
             $uriPath = _THEME_SUP_DIR_ . Context::getContext()->language->iso_code . '.' . $extension;
         }
 
-        return $this->protocol_content . Tools::getMediaServer($uriPath) . $uriPath;
+        return $this->getMediaLink($uriPath);
     }
 
     /**
@@ -1066,7 +1034,7 @@ class LinkCore
             $uriPath = _THEME_MANU_DIR_ . Context::getContext()->language->iso_code . '.' . $extension;
         }
 
-        return $this->protocol_content . Tools::getMediaServer($uriPath) . $uriPath;
+        return $this->getMediaLink($uriPath);
     }
 
     /**
@@ -1093,7 +1061,7 @@ class LinkCore
             $uriPath = _THEME_STORE_DIR_ . Context::getContext()->language->iso_code . '.' . $extension;
         }
 
-        return $this->protocol_content . Tools::getMediaServer($uriPath) . $uriPath;
+        return $this->getMediaLink($uriPath);
     }
 
     /**
@@ -1179,7 +1147,7 @@ class LinkCore
             $uriPath = _THEME_CAT_DIR_ . $idCategory . ($type ? '-' . $type : '') . '.' . $extension;
         }
 
-        return $this->protocol_content . Tools::getMediaServer($uriPath) . $uriPath;
+        return $this->getMediaLink($uriPath);
     }
 
     /**
@@ -1190,7 +1158,7 @@ class LinkCore
      *
      * @return string link
      */
-    public function getLanguageLink($idLang, Context $context = null)
+    public function getLanguageLink($idLang, ?Context $context = null)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -1353,7 +1321,7 @@ class LinkCore
      *
      * @return string
      */
-    protected function getLangLink($idLang = null, Context $context = null, $idShop = null)
+    protected function getLangLink($idLang = null, ?Context $context = null, $idShop = null)
     {
         static $psRewritingSettings = null;
         if ($psRewritingSettings === null) {
@@ -1385,7 +1353,7 @@ class LinkCore
     public function getBaseLink($idShop = null, $ssl = null, $relativeProtocol = false)
     {
         if (null === $ssl) {
-            $ssl = (Configuration::get('PS_SSL_ENABLED') && Configuration::get('PS_SSL_ENABLED_EVERYWHERE'));
+            $ssl = Configuration::get('PS_SSL_ENABLED');
         }
 
         if (Configuration::get('PS_MULTISHOP_FEATURE_ACTIVE') && $idShop !== null) {
@@ -1421,7 +1389,7 @@ class LinkCore
             '#' . Context::getContext()->link->getBaseLink() . '#',
             '#' . basename(_PS_ADMIN_DIR_) . '/#',
             '/index.php/',
-            '/_?token=[a-zA-Z0-9\_]+/',
+            '/_?token=[^&]+/',
         ];
 
         // If __PS_BASE_URI__ = '/', it destroys urls when is 'product/new' or 'modules/manage' (vhost for example)
@@ -1446,7 +1414,7 @@ class LinkCore
     {
         $quickLink = $this->getQuickLink($url);
 
-        return $quickLink === ($this->getQuickLink($_SERVER['REQUEST_URI']));
+        return $quickLink === $this->getQuickLink($_SERVER['REQUEST_URI']);
     }
 
     /**
@@ -1454,7 +1422,7 @@ class LinkCore
      *
      * @return string
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function getUrlSmarty($params)
     {
@@ -1502,11 +1470,11 @@ class LinkCore
                 $link = $context->link->getProductLink(
                     $params['id'],
                     $params['alias'],
-                    (isset($params['category']) ? $params['category'] : null),
-                    (isset($params['ean13']) ? $params['ean13'] : null),
+                    isset($params['category']) ? $params['category'] : null,
+                    isset($params['ean13']) ? $params['ean13'] : null,
                     $params['id_lang'],
                     $params['id_shop'],
-                    (isset($params['ipa']) ? (int) $params['ipa'] : 0),
+                    isset($params['ipa']) ? (int) $params['ipa'] : 0,
                     false,
                     $params['relative_protocol'],
                     $params['with_id_in_anchor'],
@@ -1589,7 +1557,7 @@ class LinkCore
                 break;
             case 'sf':
                 if (!array_key_exists('route', $params)) {
-                    throw new \InvalidArgumentException('You need to setup a `route` attribute.');
+                    throw new InvalidArgumentException('You need to setup a `route` attribute.');
                 }
 
                 $sfContainer = SymfonyContainer::getInstance();
@@ -1602,7 +1570,7 @@ class LinkCore
                     }
                     $link = $sfRouter->generate($params['route'], [], UrlGeneratorInterface::ABSOLUTE_URL);
                 } else {
-                    throw new \InvalidArgumentException('You can\'t use Symfony router in legacy context.');
+                    throw new InvalidArgumentException('You can\'t use Symfony router in legacy context.');
                 }
 
                 break;

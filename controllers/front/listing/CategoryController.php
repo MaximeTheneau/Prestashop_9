@@ -25,6 +25,8 @@
  */
 use PrestaShop\PrestaShop\Adapter\Category\CategoryProductSearchProvider;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
+use PrestaShop\PrestaShop\Adapter\Presenter\Category\CategoryPresenter;
+use PrestaShop\PrestaShop\Core\Domain\Category\ValueObject\RedirectType;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchQuery;
 use PrestaShop\PrestaShop\Core\Product\Search\SortOrder;
 
@@ -44,7 +46,10 @@ class CategoryControllerCore extends ProductListingFrontController
      */
     protected $category;
 
-    public function canonicalRedirection($canonicalURL = '')
+    /** @var CategoryPresenter */
+    protected $categoryPresenter;
+
+    public function canonicalRedirection(string $canonicalURL = '')
     {
         if (Validate::isLoadedObject($this->category)) {
             parent::canonicalRedirection($this->context->link->getCategoryLink($this->category));
@@ -52,9 +57,11 @@ class CategoryControllerCore extends ProductListingFrontController
     }
 
     /**
-     * {@inheritdoc}
+     * Returns canonical URL for current category
+     *
+     * @return string
      */
-    public function getCanonicalURL()
+    public function getCanonicalURL(): string
     {
         if (!Validate::isLoadedObject($this->category)) {
             return '';
@@ -81,10 +88,40 @@ class CategoryControllerCore extends ProductListingFrontController
         parent::init();
 
         if (!Validate::isLoadedObject($this->category) || !$this->category->active || !$this->category->existsInShop($this->context->shop->id)) {
-            header('HTTP/1.1 404 Not Found');
-            header('Status: 404 Not Found');
-            $this->setTemplate('errors/404');
-            $this->notFound = true;
+            if (!$this->category->id_type_redirected) {
+                if (in_array($this->category->redirect_type, [RedirectType::TYPE_PERMANENT, RedirectType::TYPE_TEMPORARY])) {
+                    $this->category->id_type_redirected = Category::getRootCategory()->id;
+                }
+            }
+
+            switch ($this->category->redirect_type) {
+                case RedirectType::TYPE_PERMANENT:
+                    header('HTTP/1.1 301 Moved Permanently');
+                    header('Location: ' . $this->context->link->getCategoryLink($this->category->id_type_redirected));
+                    exit;
+                case RedirectType::TYPE_TEMPORARY:
+                    header('HTTP/1.1 302 Moved Temporarily');
+                    header('Cache-Control: no-cache');
+                    header('Location: ' . $this->context->link->getCategoryLink($this->category->id_type_redirected));
+                    exit;
+                case RedirectType::TYPE_GONE:
+                    header('HTTP/1.1 410 Gone');
+                    header('Status: 410 Gone');
+                    $this->errors[] = $this->trans('This category is no longer available.', [], 'Shop.Notifications.Error');
+                    $this->setTemplate('errors/410');
+                    $this->notFound = true;
+
+                    break;
+                case RedirectType::TYPE_NOT_FOUND:
+                default:
+                    header('HTTP/1.1 404 Not Found');
+                    header('Status: 404 Not Found');
+                    $this->errors[] = $this->trans('This category is no longer available.', [], 'Shop.Notifications.Error');
+                    $this->setTemplate('errors/404');
+                    $this->notFound = true;
+
+                    break;
+            }
 
             return;
         } elseif (!$this->category->checkAccess($this->context->customer->id)) {
@@ -96,31 +133,19 @@ class CategoryControllerCore extends ProductListingFrontController
             return;
         }
 
-        $categoryVar = $this->getTemplateVarCategory();
-
-        // Chained hook call - if multiple modules are hooked here, they will receive the result of the previous one as a parameter
-        $filteredCategory = Hook::exec(
-            'filterCategoryContent',
-            ['object' => $categoryVar],
-            null,
-            false,
-            true,
-            false,
-            null,
-            true
-        );
-        if (!empty($filteredCategory['object'])) {
-            $categoryVar = $filteredCategory['object'];
-        }
+        // Initialize presenter, we will use it for all cases
+        $this->categoryPresenter = new CategoryPresenter($this->context->link);
 
         $this->context->smarty->assign([
-            'category' => $categoryVar,
+            'category' => $this->getTemplateVarCategory(),
             'subcategories' => $this->getTemplateVarSubCategories(),
         ]);
     }
 
     /**
-     * {@inheritdoc}
+     * Assign template vars related to page content.
+     *
+     * @see FrontController::initContent()
      */
     public function initContent()
     {
@@ -171,9 +196,12 @@ class CategoryControllerCore extends ProductListingFrontController
     }
 
     /**
+     * Gets the product search query for the controller. This is a set of information that
+     * a filtering module or the default provider will use to fetch our products.
+     *
      * @return ProductSearchQuery
      *
-     * @throws \PrestaShop\PrestaShop\Core\Product\Search\Exception\InvalidSortOrderDirectionException
+     * @throws PrestaShop\PrestaShop\Core\Product\Search\Exception\InvalidSortOrderDirectionException
      */
     protected function getProductSearchQuery()
     {
@@ -187,6 +215,8 @@ class CategoryControllerCore extends ProductListingFrontController
     }
 
     /**
+     * Default product search provider used if no filtering module stood up for the job
+     *
      * @return CategoryProductSearchProvider
      */
     protected function getDefaultProductSearchProvider()
@@ -199,38 +229,46 @@ class CategoryControllerCore extends ProductListingFrontController
 
     protected function getTemplateVarCategory()
     {
-        $category = $this->objectPresenter->present($this->category);
-        $category['image'] = $this->getImage(
+        $categoryVar = $this->categoryPresenter->present(
             $this->category,
-            $this->category->id_image
+            $this->context->language
         );
 
-        return $category;
+        $filteredCategory = Hook::exec(
+            'filterCategoryContent',
+            ['object' => $categoryVar],
+            $id_module = null,
+            $array_return = false,
+            $check_exceptions = true,
+            $use_push = false,
+            $id_shop = null,
+            $chain = true
+        );
+        if (!empty($filteredCategory['object'])) {
+            $categoryVar = $filteredCategory['object'];
+        }
+
+        return $categoryVar;
     }
 
     protected function getTemplateVarSubCategories()
     {
-        return array_map(function (array $category) {
-            $object = new Category(
-                $category['id_category'],
-                $this->context->language->id
-            );
+        $subcategories = $this->category->getSubCategories($this->context->language->id);
 
-            $category['image'] = $this->getImage(
-                $object,
-                $object->id_image
+        foreach ($subcategories as &$subcategory) {
+            $subcategory = $this->categoryPresenter->present(
+                $subcategory,
+                $this->context->language
             );
+        }
 
-            $category['url'] = $this->context->link->getCategoryLink(
-                $category['id_category'],
-                $category['link_rewrite']
-            );
-
-            return $category;
-        }, $this->category->getSubCategories($this->context->language->id));
+        return $subcategories;
     }
 
-    protected function getImage($object, $id_image)
+    /**
+     * @deprecated since 9.0.0 and will be removed in 10.0.0
+     */
+    protected function getImage(Category $object, int $id_image)
     {
         $retriever = new ImageRetriever(
             $this->context->link
@@ -271,6 +309,12 @@ class CategoryControllerCore extends ProductListingFrontController
         return $this->category;
     }
 
+    /**
+     * Initializes a set of commonly used variables related to the current page, available for use
+     * in the template. @see FrontController::assignGeneralPurposeVariables for more information.
+     *
+     * @return array
+     */
     public function getTemplateVarPage()
     {
         $page = parent::getTemplateVarPage();

@@ -26,19 +26,21 @@
 
 use PrestaShop\PrestaShop\Adapter\Module\Repository\ModuleRepository;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+use PrestaShop\PrestaShop\Core\Exception\CoreException;
 use PrestaShop\PrestaShop\Core\Version;
 use PrestaShop\TranslationToolsBundle\TranslationToolsBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\Config\Resource\FileExistenceResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel;
 
-class AppKernel extends Kernel
+abstract class AppKernel extends Kernel
 {
-    const VERSION = Version::VERSION;
-    const MAJOR_VERSION_STRING = Version::MAJOR_VERSION_STRING;
-    const MAJOR_VERSION = 8;
-    const MINOR_VERSION = 1;
-    const RELEASE_VERSION = 6;
+    public const VERSION = Version::VERSION;
+    public const MAJOR_VERSION_STRING = Version::MAJOR_VERSION_STRING;
+    public const MAJOR_VERSION = Version::MAJOR_VERSION;
+    public const MINOR_VERSION = Version::MINOR_VERSION;
+    public const RELEASE_VERSION = Version::RELEASE_VERSION;
 
     /**
      * Lock stream is saved as static field, this way if multiple AppKernel are instanciated (this can happen in
@@ -49,38 +51,45 @@ class AppKernel extends Kernel
     protected static $lockStream = null;
 
     /**
+     * @var ModuleRepository
+     */
+    protected $moduleRepository = null;
+
+    abstract public function getAppId(): string;
+
+    /**
      * {@inheritdoc}
      */
-    public function registerBundles()
+    public function registerBundles(): iterable
     {
-        $bundles = array(
+        $bundles = [
             new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
             new Symfony\Bundle\SecurityBundle\SecurityBundle(),
             new Symfony\Bundle\TwigBundle\TwigBundle(),
             new Symfony\Bundle\MonologBundle\MonologBundle(),
-            new Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle(),
             new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
-            new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new ApiPlatform\Symfony\Bundle\ApiPlatformBundle(),
             // PrestaShop Core bundle
-            new PrestaShopBundle\PrestaShopBundle(),
+            new PrestaShopBundle\PrestaShopBundle($this),
             // PrestaShop Translation parser
             new TranslationToolsBundle(),
-            new League\Tactician\Bundle\TacticianBundle(),
             new FOS\JsRoutingBundle\FOSJsRoutingBundle(),
-        );
+            new Symfony\UX\TwigComponent\TwigComponentBundle(),
+            new Twig\Extra\TwigExtraBundle\TwigExtraBundle(),
+            new Symfony\UX\Icons\UXIconsBundle(),
+        ];
 
-        if (in_array($this->getEnvironment(), array('dev', 'test'), true)) {
+        if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
             $bundles[] = new Symfony\Bundle\DebugBundle\DebugBundle();
             $bundles[] = new Symfony\Bundle\WebProfilerBundle\WebProfilerBundle();
         }
 
         /* Will not work until PrestaShop is installed */
-        $activeModules = $this->getActiveModules();
-        if (!empty($activeModules)) {
+        $installedModules = $this->getModuleRepository()->getInstalledModules();
+        if (!empty($installedModules)) {
             try {
-                $this->enableComposerAutoloaderOnModules($activeModules);
-            } catch (\Exception $e) {
+                $this->enableComposerAutoloaderOnModules($installedModules);
+            } catch (Exception $e) {
             }
         }
 
@@ -101,7 +110,7 @@ class AppKernel extends Kernel
      * Perform a lock on a file before cache clear is performed, this lock will be unlocked once the cache has been cleared.
      * Until then any other process will have to wait until the file is unlocked.
      *
-     * @return bool Returns boolean indicating if the lock file was successfully locked.
+     * @return bool returns boolean indicating if the lock file was successfully locked
      */
     public function locksCacheClear(): bool
     {
@@ -117,6 +126,7 @@ class AppKernel extends Kernel
         if (false === $clearCacheLocked) {
             // Clear cache is already locked by another process, so we simply return
             fclose($lockStream);
+
             return false;
         }
 
@@ -164,19 +174,6 @@ class AppKernel extends Kernel
     /**
      * {@inheritdoc}
      */
-    protected function getKernelParameters()
-    {
-        $kernelParameters = parent::getKernelParameters();
-
-        return array_merge(
-            $kernelParameters,
-            array('kernel.active_modules' => $this->getActiveModules())
-        );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getRootDir()
     {
         return __DIR__;
@@ -185,38 +182,134 @@ class AppKernel extends Kernel
     /**
      * {@inheritdoc}
      */
-    public function getLogDir()
+    public function getLogDir(): string
     {
         return dirname(__DIR__) . '/var/logs';
+    }
+
+    public function getCacheDir(): string
+    {
+        return $this->getProjectDir() . '/var/cache/' . $this->environment . '/' . $this->getAppId();
     }
 
     /**
      * {@inheritdoc}
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
-        $loader->load(function (ContainerBuilder $container) {
-            $container->setParameter('container.autowiring.strict_mode', true);
-            $container->setParameter('container.dumper.inline_class_loader', false);
-            $container->addObjectResource($this);
-        });
+        $loader->load($this->getKernelConfigPath());
 
-        $loader->load($this->getRootDir() . '/config/config_' . $this->getEnvironment() . '.yml');
+        $activeModules = $this->getModuleRepository()->getActiveModules();
+        // We only load translations and services of active modules (not simply installed)
+        $moduleTranslationsPaths = [];
+        foreach ($activeModules as $activeModulePath) {
+            $modulePath = _PS_MODULE_DIR_ . $activeModulePath;
+            $translationsPath = sprintf('%s/translations', $modulePath);
 
-        // Add translation paths to load into the translator. The paths are loaded by the Symfony's FrameworkExtension
-        $loader->load(function (ContainerBuilder $container) {
-            /** @var array $moduleTranslationsPaths */
-            $moduleTranslationsPaths = $container->getParameter('modules_translation_paths');
-            foreach ($this->getActiveModules() as $activeModulePath) {
-                $translationsDir = _PS_MODULE_DIR_ . $activeModulePath . '/translations';
-                if (is_dir($translationsDir)) {
-                    $moduleTranslationsPaths[] = $translationsDir;
+            $configFiles = [
+                sprintf('%s/config/services.yml', $modulePath),
+                sprintf('%s/config/admin/services.yml', $modulePath),
+                // @todo Uncomment to Load this file once we'll have a unique container
+                // sprintf('%s/config/front/services.yml', $modulePath),
+            ];
+
+            foreach ($configFiles as $file) {
+                if (is_file($file)) {
+                    $loader->load($file);
                 }
             }
+
+            if (is_dir($translationsPath)) {
+                $moduleTranslationsPaths[] = $translationsPath;
+            }
+        }
+
+        $installedModules = $this->getModuleRepository()->getInstalledModules();
+        $loader->load(function (ContainerBuilder $container) use ($moduleTranslationsPaths, $activeModules, $installedModules) {
+            $container->setParameter('container.autowiring.strict_mode', true);
+            $container->setParameter('container.dumper.inline_class_loader', false);
+            $container->setParameter('prestashop.module_dir', _PS_MODULE_DIR_);
+            /* @deprecated kernel.active_modules is deprecated. Use prestashop.active_modules instead. */
+            $container->setParameter('kernel.active_modules', $activeModules);
+            $container->setParameter('prestashop.active_modules', $activeModules);
+            $container->setParameter('prestashop.installed_modules', $installedModules);
+            $container->addObjectResource($this);
             $container->setParameter('modules_translation_paths', $moduleTranslationsPaths);
+
+            // Define parameter for admin folder path
+            if (defined('PS_ADMIN_DIR') && is_dir(PS_ADMIN_DIR)) {
+                $adminDir = PS_ADMIN_DIR;
+            } elseif (defined('_PS_ADMIN_DIR_') && is_dir(_PS_ADMIN_DIR_)) {
+                $adminDir = _PS_ADMIN_DIR_;
+            } else {
+                // Look for potential admin folders, condition to meet:
+                //  - first level folders in the project folder
+                //  - contains a PHP file that define the const PS_ADMIN_DIR or _PS_ADMIN_DIR_
+                //  - the first folder found is used (alphabetical order, but files named index.php have the highest priority)
+                $finder = new Symfony\Component\Finder\Finder();
+                $finder->files()
+                    ->name('*.php')
+                    ->contains('/define\([\'\"](_)?PS_ADMIN_DIR(_)?[\'\"]/')
+                    ->depth('== 1')
+                    ->sort(function (SplFileInfo $a, SplFileInfo $b): int {
+                        // Prioritize files named index.php
+                        if ($a->getFilename() === 'index.php') {
+                            return -1;
+                        }
+
+                        return strcmp($a->getRealPath(), $b->getRealPath());
+                    })
+                    ->in($this->getProjectDir())
+                ;
+                foreach ($finder as $adminIndexFile) {
+                    $adminDir = $adminIndexFile->getPath();
+                    // Container freshness depends on this file existence
+                    $container->addResource(new FileExistenceResource($adminIndexFile->getRealPath()));
+                    break;
+                }
+            }
+
+            if (!isset($adminDir) || !is_dir($adminDir)) {
+                throw new CoreException('Could not detect admin folder, and const as not defined.');
+            }
+            $container->setParameter('prestashop.admin_dir', $adminDir);
+            $container->setParameter('prestashop.admin_folder_name', basename($adminDir));
+            // Container freshness depends on this folder existence
+            $container->addResource(new FileExistenceResource($adminDir));
         });
+    }
+
+    /**
+     * If the app has a dedicated config file load it, else load the common one.
+     *
+     * @return string
+     */
+    protected function getKernelConfigPath(): string
+    {
+        $dedicatedConfigFile = $this->getRootDir() . '/config/' . $this->getAppId() . '/config_' . $this->getEnvironment() . '.yml';
+        if (file_exists($dedicatedConfigFile)) {
+            return $dedicatedConfigFile;
+        }
+
+        return $this->getRootDir() . '/config/config_' . $this->getEnvironment() . '.yml';
+    }
+
+    /**
+     * Add default kernel parameters like kernel.app_id
+     *
+     * @return array
+     */
+    protected function getKernelParameters(): array
+    {
+        return array_merge(
+            parent::getKernelParameters(),
+            [
+                'kernel.app_id' => $this->getAppId(),
+                'prestashop.legacy_cache_dir' => _PS_CACHE_DIR_,
+            ],
+        );
     }
 
     /**
@@ -248,22 +341,18 @@ class AppKernel extends Kernel
      *
      * @return string The project root dir
      */
-    public function getProjectDir()
+    public function getProjectDir(): string
     {
         return realpath(__DIR__ . '/..');
     }
 
-    private function getActiveModules(): array
+    protected function getModuleRepository(): ModuleRepository
     {
-        $activeModules = [];
-        try {
-            $activeModules = (new ModuleRepository(_PS_ROOT_DIR_, _PS_MODULE_DIR_))->getActiveModules();
-        } catch (\Exception $e) {
-            //Do nothing because the modules retrieval must not block the kernel, and it won't work
-            //during the installation process
+        if ($this->moduleRepository === null) {
+            $this->moduleRepository = new ModuleRepository(_PS_ROOT_DIR_, _PS_MODULE_DIR_);
         }
 
-        return $activeModules;
+        return $this->moduleRepository;
     }
 
     protected function getContainerClearCacheLockPath(): string
@@ -276,6 +365,12 @@ class AppKernel extends Kernel
 
     protected function waitUntilCacheClearIsOver(): void
     {
+        // CLI environment shouldn't be blocked, this allows for example clearing the cache even when the kernel is blocked for HTTP requests
+        // which is exactly what the SymfonyCacheClearer does.
+        if (Tools::isPHPCLI()) {
+            return;
+        }
+
         if (null !== self::$lockStream) {
             // If lockStream is not null it means we are actually in the process that locked it, we don't wait for anything
             // or the cache clear will never happen
@@ -316,5 +411,15 @@ class AppKernel extends Kernel
         if (file_exists($clearCacheLockPath)) {
             unlink($clearCacheLockPath);
         }
+    }
+
+    /**
+     * Get App type of current Kernel based on kernel class name. (admin or front)
+     *
+     * @return string
+     */
+    public function getAppType(): string
+    {
+        return $this instanceof FrontKernel ? 'front' : 'admin';
     }
 }

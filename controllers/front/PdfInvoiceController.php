@@ -43,7 +43,12 @@ class PdfInvoiceControllerCore extends FrontController
     {
         // If the customer is not logged in AND no secure key was passed
         if (!$this->context->customer->isLogged() && !Tools::getValue('secure_key')) {
-            Tools::redirect('index.php?controller=authentication&back=pdf-invoice');
+            Tools::redirect($this->context->link->getPageLink(
+                'authentication',
+                null,
+                null,
+                ['back' => 'pdf-invoice']
+            ));
         }
 
         // If built-in invoicing is disabled

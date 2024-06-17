@@ -28,6 +28,7 @@ use PrestaShop\PrestaShop\Adapter\LegacyLogger;
 use PrestaShop\PrestaShop\Adapter\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use PrestaShop\PrestaShop\Core\Exception\CoreException;
+use PrestaShop\PrestaShop\Core\Module\Exception\ModuleErrorInterface;
 use PrestaShop\PrestaShop\Core\Module\WidgetInterface;
 
 class HookCore extends ObjectModel
@@ -75,7 +76,7 @@ class HookCore extends ObjectModel
         'fields' => [
             'name' => ['type' => self::TYPE_STRING, 'validate' => 'isHookName', 'required' => true, 'size' => 191],
             'title' => ['type' => self::TYPE_STRING, 'validate' => 'isGenericName'],
-            'description' => ['type' => self::TYPE_HTML, 'validate' => 'isCleanHtml'],
+            'description' => ['type' => self::TYPE_HTML, 'validate' => 'isCleanHtml', 'size' => 4194303],
             'position' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool'],
             'active' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool'],
         ],
@@ -113,7 +114,6 @@ class HookCore extends ObjectModel
         'displayAdminOrderContentShip' => ['from' => '1.7.7.0'],
 
         // Controller
-        'actionAjaxDieBefore' => ['from' => '1.6.1.1'],
         'actionGetProductPropertiesAfter' => ['from' => '1.7.8.0'],
     ];
 
@@ -425,6 +425,9 @@ class HookCore extends ObjectModel
                     return static::coreCallHook($module, $methodName, $hookArgs);
                 }
             }
+        } catch (ModuleErrorInterface $e) {
+            // Exceptions that implements ModuleErrorInterface are usefull to display error messages
+            throw $e;
         } catch (Exception $e) {
             $environment = ServiceLocator::get('\\PrestaShop\\PrestaShop\\Adapter\\Environment');
             if ($environment->isDebug()) {
@@ -789,9 +792,9 @@ class HookCore extends ObjectModel
      * @param int|null $id_shop If specified, hook will be execute the shop with this ID
      * @param bool $chain If specified, each module on this hook will receive the result of the previous one
      *
-     * @throws PrestaShopException
-     *
      * @return mixed|null Module's output
+     *
+     * @throws PrestaShopException
      */
     public static function exec(
         $hook_name,
@@ -853,7 +856,7 @@ class HookCore extends ObjectModel
                 $hookRegistry->collect();
             }
 
-            return ($array_return) ? [] : false;
+            return ($array_return) ? [] : null;
         }
 
         // Store list of executed hooks on this page
@@ -974,18 +977,35 @@ class HookCore extends ObjectModel
             if (Hook::isHookCallableOn($moduleInstance, $registeredHookName)) {
                 $hook_args['altern'] = ++$altern;
 
+                // If this is a chain hook and it's not the first module to call,
+                // we will pass the response from the previous one as parameters.
                 if (0 !== $key && true === $chain) {
                     $hook_args = $output;
                 }
 
                 $display = Hook::callHookOn($moduleInstance, $registeredHookName, $hook_args);
 
+                // Case 1 - each module response to different array key. We don't care about the response.
                 if ($array_return) {
                     $output[$moduleInstance->name] = $display;
+                // Case 2 - chaining. Here, each module MUST return an array that will the next module receive as parameters.
                 } elseif (true === $chain) {
                     $output = $display;
+                // Case 3 - classic display hook. Here we need to verify if the response is not an array.
                 } else {
-                    $output .= $display;
+                    // If it's an array, we will disregard the response
+                    if (is_array($display)) {
+                        // And notify the developer in debug mode.
+                        if (_PS_MODE_DEV_) {
+                            trigger_error(sprintf(
+                                'Module %s returned an array on hook %s. This is not allowed, the response must be joinable to a string.',
+                                $moduleInstance->name,
+                                $hook_name
+                            ), E_USER_NOTICE);
+                        }
+                    } else {
+                        $output .= $display;
+                    }
                 }
 
                 if ($isRegistryEnabled) {
@@ -993,18 +1013,35 @@ class HookCore extends ObjectModel
                 }
             } elseif (Hook::isDisplayHookName($registeredHookName)) {
                 if ($moduleInstance instanceof WidgetInterface) {
+                    // If this is a chain hook and it's not the first module to call,
+                    // we will pass the response from the previous one as parameters.
                     if (0 !== $key && true === $chain) {
                         $hook_args = $output;
                     }
 
                     $display = Hook::coreRenderWidget($moduleInstance, $registeredHookName, $hook_args);
 
+                    // Case 1 - each module response to different array key. We don't care about the response.
                     if ($array_return) {
                         $output[$moduleInstance->name] = $display;
+                    // Case 2 - chaining. Here, each module MUST return an array that will the next module receive as parameters.
                     } elseif (true === $chain) {
                         $output = $display;
+                    // Case 3 - classic display hook. Here we need to verify if the response is not an array.
                     } else {
-                        $output .= $display;
+                        // If it's an array, we will disregard the response
+                        if (is_array($display)) {
+                            // And notify the developer in debug mode.
+                            if (_PS_MODE_DEV_) {
+                                trigger_error(sprintf(
+                                    'Module %s returned an array on hook %s. This is not allowed, the response must be joinable to a string.',
+                                    $moduleInstance->name,
+                                    $hook_name
+                                ), E_USER_NOTICE);
+                            }
+                        } else {
+                            $output .= $display;
+                        }
                     }
                 }
 
@@ -1016,7 +1053,7 @@ class HookCore extends ObjectModel
 
         if ($different_shop
             && isset($old_shop, $old_context, $shop->id)
-             ) {
+        ) {
             $context->shop = $old_shop;
             $context->shop->setContext($old_context, $shop->id);
         }
@@ -1046,7 +1083,7 @@ class HookCore extends ObjectModel
     public static function coreRenderWidget($module, $hook_name, $params)
     {
         $context = Context::getContext();
-        if (!Module::isEnabled($module->name) || $context->isMobile() && !Module::isEnabledForMobileDevices($module->name)) {
+        if (!Module::isEnabled($module->name)) {
             return null;
         }
 
@@ -1063,7 +1100,7 @@ class HookCore extends ObjectModel
     }
 
     /**
-     * @return \PrestaShopBundle\DataCollector\HookRegistry|null
+     * @return PrestaShopBundle\DataCollector\HookRegistry|null
      */
     private static function getHookRegistry()
     {
@@ -1146,8 +1183,7 @@ class HookCore extends ObjectModel
                 Shop::addSqlAssociation(
                     'module',
                     'm',
-                    true,
-                    'module_shop.enable_device & ' . (int) Context::getContext()->getDevice()
+                    true
                 )
             );
         } else {
@@ -1267,7 +1303,7 @@ class HookCore extends ObjectModel
     {
         $cacheId = 'hook_idsbyname';
         if ($withAliases) {
-            $cacheId .= 'hook_idsbyname_withalias';
+            $cacheId = 'hook_idsbyname_withalias';
         }
 
         if (!$refreshCache && Cache::isStored($cacheId)) {

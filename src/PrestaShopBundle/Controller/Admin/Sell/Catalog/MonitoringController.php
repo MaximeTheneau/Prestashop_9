@@ -48,7 +48,7 @@ use PrestaShop\PrestaShop\Core\Search\Filters\Monitoring\ProductWithoutImageFilt
 use PrestaShop\PrestaShop\Core\Search\Filters\Monitoring\ProductWithoutPriceFilters;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use PrestaShopBundle\Form\Admin\Sell\Category\DeleteCategoriesType;
-use PrestaShopBundle\Security\Annotation\AdminSecurity;
+use PrestaShopBundle\Security\Attribute\AdminSecurity;
 use PrestaShopBundle\Service\Grid\ResponseBuilder;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -62,8 +62,6 @@ class MonitoringController extends FrameworkBundleAdminController
     /**
      * Shows Monitoring listing page
      *
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
-     *
      * @param Request $request
      * @param EmptyCategoryFilters $emptyCategoryFilters
      * @param NoQtyProductWithCombinationFilters $noQtyProductWithCombinationFilters
@@ -75,6 +73,7 @@ class MonitoringController extends FrameworkBundleAdminController
      *
      * @return Response
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function indexAction(
         Request $request,
         EmptyCategoryFilters $emptyCategoryFilters,
@@ -112,18 +111,18 @@ class MonitoringController extends FrameworkBundleAdminController
             'productWithoutPriceGrid' => $this->presentGrid($productWithoutPriceGrid),
             'showcaseCardName' => ShowcaseCard::MONITORING_CARD,
             'isShowcaseCardClosed' => $isShowcaseCardClosed,
+            'layoutTitle' => $this->trans('Monitoring', 'Admin.Navigation.Menu'),
         ]);
     }
 
     /**
      * Provides filters functionality
      *
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
-     *
      * @param Request $request
      *
      * @return RedirectResponse
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function searchAction(Request $request)
     {
         $gridIdentifiers = $this->identifySearchableGrid($request);
@@ -142,16 +141,11 @@ class MonitoringController extends FrameworkBundleAdminController
     /**
      * Delete monitoring items in bulk action.
      *
-     * @AdminSecurity(
-     *     "is_granted('delete', request.get('_legacy_controller'))",
-     *     redirectRoute="admin_monitorings_index",
-     *     message="You do not have permission to delete this."
-     * )
-     *
      * @param Request $request
      *
      * @return RedirectResponse
      */
+    #[AdminSecurity("is_granted('delete', request.get('_legacy_controller'))", redirectRoute: 'admin_monitorings_index', message: 'You do not have permission to delete this.')]
     public function deleteBulkAction(Request $request): RedirectResponse
     {
         $gridIdentifiers = $this->identifySearchableGrid($request);
@@ -181,11 +175,7 @@ class MonitoringController extends FrameworkBundleAdminController
      */
     private function getBulkProductsFromRequest(Request $request, array $gridIdentifiers): array
     {
-        $productIds = $request->request->get(sprintf('%s_%s', $gridIdentifiers['grid_id'], 'monitoring_products_bulk'));
-
-        if (!is_array($productIds)) {
-            return [];
-        }
+        $productIds = $request->request->all(sprintf('%s_%s', $gridIdentifiers['grid_id'], 'monitoring_products_bulk'));
 
         foreach ($productIds as $i => $productId) {
             $productIds[$i] = (int) $productId;

@@ -38,12 +38,6 @@ $smarty->setCompileDir(_PS_CACHE_DIR_ . 'smarty/compile');
 $smarty->setCacheDir(_PS_CACHE_DIR_ . 'smarty/cache');
 $smarty->use_sub_dirs = true;
 $smarty->caching = Smarty::CACHING_OFF;
-
-/* @phpstan-ignore-next-line */
-if (_PS_SMARTY_CACHING_TYPE_ == 'mysql') {
-    include _PS_CLASS_DIR_ . 'Smarty/SmartyCacheResourceMysql.php';
-    $smarty->caching_type = 'mysql';
-}
 $smarty->force_compile = Configuration::get('PS_SMARTY_FORCE_COMPILE') == _PS_SMARTY_FORCE_COMPILE_;
 $smarty->compile_check = (Configuration::get('PS_SMARTY_FORCE_COMPILE') >= _PS_SMARTY_CHECK_COMPILE_) ? Smarty::COMPILECHECK_ON : Smarty::COMPILECHECK_OFF;
 $smarty->debug_tpl = _PS_ALL_THEMES_DIR_ . 'debug.tpl';
@@ -98,6 +92,8 @@ smartyRegisterFunction($smarty, 'modifier', 'truncate', 'smarty_modifier_truncat
 // Native PHP functions
 smartyRegisterFunction($smarty, 'modifier', 'addcslashes', 'addcslashes');
 smartyRegisterFunction($smarty, 'modifier', 'addslashes', 'addslashes');
+smartyRegisterFunction($smarty, 'modifier', 'array_merge', 'array_merge');
+smartyRegisterFunction($smarty, 'modifier', 'array_slice', 'array_slice');
 smartyRegisterFunction($smarty, 'modifier', 'date', 'date');
 smartyRegisterFunction($smarty, 'modifier', 'explode', 'explode');
 smartyRegisterFunction($smarty, 'modifier', 'floatval', 'floatval');
@@ -117,6 +113,7 @@ smartyRegisterFunction($smarty, 'modifier', 'rand', 'rand');
 smartyRegisterFunction($smarty, 'modifier', 'sizeof', 'sizeof');
 smartyRegisterFunction($smarty, 'modifier', 'str_replace', 'str_replace');
 smartyRegisterFunction($smarty, 'modifier', 'stripslashes', 'stripslashes');
+smartyRegisterFunction($smarty, 'modifier', 'strstr', 'strstr');
 smartyRegisterFunction($smarty, 'modifier', 'strtolower', 'strtolower');
 smartyRegisterFunction($smarty, 'modifier', 'strval', 'strval');
 smartyRegisterFunction($smarty, 'modifier', 'substr', 'substr');
@@ -206,7 +203,7 @@ function smartyCleanHtml($data)
     }
 }
 
-function smartyClassname($classname)
+function smartyClassname(string $classname)
 {
     $classname = Tools::replaceAccentedChars(strtolower($classname));
     $classname = preg_replace(['/[^A-Za-z0-9-_]/', '/-{3,}/', '/-+$/'], ['-', '-', ''], $classname);
@@ -236,3 +233,4 @@ function smarty_endWithoutReference($arrayValue)
 {
     return end($arrayValue);
 }
+

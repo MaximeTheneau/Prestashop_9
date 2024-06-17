@@ -187,7 +187,7 @@ class ProductDuplicator extends AbstractMultiShopObjectModelRepository
      */
     public function duplicate(ProductId $productId, ShopConstraint $shopConstraint): ProductId
     {
-        //@todo: add database transaction. After/if PR #21740 gets merged
+        // @todo: add database transaction. After/if PR #21740 gets merged
         $oldProductId = $productId->getValue();
         $this->hookDispatcher->dispatchWithParameters(
             'actionAdminDuplicateBefore',
@@ -211,7 +211,8 @@ class ProductDuplicator extends AbstractMultiShopObjectModelRepository
             'actionAdminDuplicateAfter',
             ['id_product' => $oldProductId, 'id_product_new' => $newProductId]
         );
-        //@todo: after ##21740 (transactions PR) is resolved.
+
+        // @todo: after ##21740 (transactions PR) is resolved.
         //  Based on if its accepted or not, we need to implement roll back if something went wrong.
         //  If transactions are accepted then we use it, else we manually rewind (delete the duplicate product)
         return new ProductId((int) $newProduct->id);
@@ -266,6 +267,7 @@ class ProductDuplicator extends AbstractMultiShopObjectModelRepository
             // The duplicated product is disabled and not indexed by default
             $shopProduct->indexed = false;
             $shopProduct->active = false;
+            $shopProduct->date_add = date('Y-m-d H:i:s');
             // Force a copy name to tell the two products apart (for each shop since name can be different on each shop)
             $shopProduct->name = $this->getNewProductName($shopProduct->name);
             // Force ID to update the new product
@@ -284,6 +286,7 @@ class ProductDuplicator extends AbstractMultiShopObjectModelRepository
 
     /**
      * @template T
+     *
      * @psalm-param T $sourceObjectModel
      *
      * @return T
@@ -465,7 +468,7 @@ class ProductDuplicator extends AbstractMultiShopObjectModelRepository
                     ->where('cp.id_category = :categoryId')
                     ->setParameter('categoryId', $categoryId)
                     ->addOrderBy('position', 'DESC')
-                    ->execute()
+                    ->executeQuery()
                     ->fetchOne()
                 ;
             }
@@ -654,7 +657,7 @@ class ProductDuplicator extends AbstractMultiShopObjectModelRepository
                 ->from($this->dbPrefix . 'feature_value')
                 ->select('id_feature_value')
                 ->addOrderBy('id_feature_value', 'DESC')
-                ->execute()
+                ->executeQuery()
                 ->fetchOne()
             ;
 
@@ -748,7 +751,7 @@ class ProductDuplicator extends AbstractMultiShopObjectModelRepository
             ->from($this->dbPrefix . 'customization_field')
             ->select('id_customization_field')
             ->addOrderBy('id_customization_field', 'DESC')
-            ->execute()
+            ->executeQuery()
             ->fetchOne()
         ;
 
@@ -854,15 +857,6 @@ class ProductDuplicator extends AbstractMultiShopObjectModelRepository
                 $oldOriginalPath,
                 $newOriginalPath
             );
-
-            // And fileType
-            $originalFileTypePath = dirname($oldOriginalPath) . '/fileType';
-            if (file_exists($originalFileTypePath)) {
-                $fs->copy(
-                    $originalFileTypePath,
-                    dirname($newOriginalPath) . '/fileType'
-                );
-            }
 
             $imagesMapping[$oldImageId->getValue()] = $newImageId->getValue();
         }
@@ -1091,12 +1085,12 @@ class ProductDuplicator extends AbstractMultiShopObjectModelRepository
                 $arrayType = is_int(reset($value)) ? Connection::PARAM_INT_ARRAY : Connection::PARAM_STR_ARRAY;
                 $qb
                     ->andWhere("$column IN (:$column)")
-                    ->setParameter(":$column", $value, $arrayType)
+                    ->setParameter($column, $value, $arrayType)
                 ;
             } else {
                 $qb
                     ->andWhere("$column = :$column")
-                    ->setParameter(":$column", $value)
+                    ->setParameter($column, $value)
                 ;
             }
         }
@@ -1106,7 +1100,7 @@ class ProductDuplicator extends AbstractMultiShopObjectModelRepository
         }
 
         try {
-            $rows = $qb->execute()->fetchAllAssociative();
+            $rows = $qb->executeQuery()->fetchAllAssociative();
         } catch (Exception $e) {
             throw new CannotDuplicateProductException(
                 sprintf('Cannot select rows from table %s', $this->dbPrefix . $table),

@@ -25,12 +25,14 @@
  */
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Presenter\AbstractLazyArray;
+use PrestaShop\PrestaShop\Adapter\Presenter\Manufacturer\ManufacturerPresenter;
 use PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductLazyArray;
 use PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use PrestaShop\PrestaShop\Core\Domain\Product\ValueObject\RedirectType;
 use PrestaShop\PrestaShop\Core\Product\ProductExtraContentFinder;
+use PrestaShopBundle\Security\Admin\LegacyAdminTokenValidator;
 
 class ProductControllerCore extends ProductPresentingFrontControllerCore
 {
@@ -73,7 +75,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
      */
     protected $isPreview = false;
 
-    public function canonicalRedirection($canonical_url = '')
+    public function canonicalRedirection(string $canonical_url = '')
     {
         // This is there to prevent error, because this function is also called
         // in parent front controller before we have even loaded our data.
@@ -101,7 +103,9 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
     }
 
     /**
-     * {@inheritdoc}
+     * Returns canonical URL for the current product
+     *
+     * @return string
      */
     public function getCanonicalURL(): string
     {
@@ -133,12 +137,12 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
         }
 
         // We are in a preview mode only if proper admin token was also provided in the URL
-        if ('1' === Tools::getValue('preview') && Tools::getValue('adtoken') == Tools::getAdminToken(
-            'AdminProducts'
-            . (int) Tab::getIdFromClassName('AdminProducts')
-            . (int) Tools::getValue('id_employee')
-        )) {
-            $this->setPreviewMode();
+        if ('1' === Tools::getValue('preview')) {
+            $adminTokenValidator = $this->getContainer()->get(LegacyAdminTokenValidator::class);
+            $isAdminTokenValid = $adminTokenValidator->isTokenValid((int) Tools::getValue('id_employee'), Tools::getValue('adtoken'));
+            if ($isAdminTokenValid) {
+                $this->setPreviewMode();
+            }
         }
 
         // Try to load product object, otherwise immediately redirect to 404
@@ -366,11 +370,15 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
 
             // Assign template vars related to the category + execute hooks related to the category
             $this->assignCategory();
+
             // Assign template vars related to the price and tax
             $this->assignPriceAndTax();
 
             // Assign attributes combinations to the template
             $this->assignAttributesCombinations();
+
+            // Add notification about this product being in cart
+            $this->addCartQuantityNotification();
 
             // Pack management
             $pack_items = Pack::isPack($this->product->id) ? Pack::getItemTable($this->product->id, $this->context->language->id, true) : [];
@@ -398,7 +406,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
 
             $this->context->smarty->assign('packItems', $presentedPackItems);
             $this->context->smarty->assign('noPackPrice', $this->product->getNoPackPrice());
-            $this->context->smarty->assign('displayPackPrice', ($pack_items && $productPrice < Pack::noPackPrice((int) $this->product->id)));
+            $this->context->smarty->assign('displayPackPrice', $pack_items && $productPrice < Pack::noPackPrice((int) $this->product->id));
             $this->context->smarty->assign('priceDisplay', $priceDisplay);
             $this->context->smarty->assign('packs', Pack::getPacksTable($this->product->id, $this->context->language->id, true, 1));
 
@@ -407,7 +415,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
                 foreach ($accessories as &$accessory) {
                     $accessory = $presenter->present(
                         $presentationSettings,
-                        Product::getProductProperties($this->context->language->id, $accessory, $this->context),
+                        $assembler->assembleProduct($accessory),
                         $this->context->language
                     );
                 }
@@ -435,15 +443,22 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
                 $product_for_template = $filteredProduct['object'];
             }
 
-            $productManufacturer = new Manufacturer((int) $this->product->id_manufacturer, $this->context->language->id);
+            // Prepare information about product manufacturer
+            $productManufacturer = null;
+            $manufacturerImageUrl = null;
+            $productBrandUrl = null;
 
-            $manufacturerImageUrl = $this->context->link->getManufacturerImageLink($productManufacturer->id);
-            $undefinedImage = $this->context->link->getManufacturerImageLink(0);
-            if ($manufacturerImageUrl === $undefinedImage) {
-                $manufacturerImageUrl = null;
+            if (!empty($this->product->id_manufacturer)) {
+                $manufacturerPresenter = new ManufacturerPresenter($this->context->link);
+                $productManufacturer = $manufacturerPresenter->present(
+                    new Manufacturer((int) $this->product->id_manufacturer, $this->context->language->id),
+                    $this->context->language
+                );
+
+                // These two variables are deprecated are kept just for backward compatibility and will be removed in v10
+                $manufacturerImageUrl = $productManufacturer['image']['small']['url'];
+                $productBrandUrl = $productManufacturer['url'];
             }
-
-            $productBrandUrl = $this->context->link->getManufacturerLink($productManufacturer->id);
 
             $this->context->smarty->assign([
                 'priceDisplay' => $priceDisplay,
@@ -551,29 +566,40 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
     }
 
     /**
-     * Get minimal product quantity or minimal product combination quantity.
-     *
-     * @deprecated This method is deprecated since 1.7.5 and will be dropped in 1.8.0, please use getProductMinimalQuantity instead.
-     *
-     * @param array $product
-     *
-     * @return int
+     * Displays information, if the customer has this product in cart already.
      */
-    protected function getMinimalProductOrDeclinationQuantity($product)
+    protected function addCartQuantityNotification()
     {
-        @trigger_error('This method is deprecated since 1.7.5 and will be dropped in 1.8.0, please use getProductMinimalQuantity instead.', E_USER_DEPRECATED);
-        $productAttributeId = $product['id_product_attribute'];
-        $minimalProductQuantity = 1;
-        if ($this->combinations) {
-            $minimalCombinationProductQuantity = (int) ($this->combinations[$productAttributeId]['minimal_quantity']);
-            if ($minimalCombinationProductQuantity) { // Ensure the minimal product combination quantity is not 0;
-                $minimalProductQuantity = $minimalCombinationProductQuantity;
-            }
-        } elseif (array_key_exists('minimal_quantity', $product)) {
-            $minimalProductQuantity = $product['minimal_quantity'];
+        if ((bool) Configuration::get('PS_DISPLAY_AMOUNT_IN_CART') !== true) {
+            return;
         }
 
-        return $minimalProductQuantity;
+        // Get quantity of this product in cart, it will return an array with
+        // quantity of this single product and also quantity in packs
+        $quantities = $this->context->cart->getProductQuantityInAllVariants(
+            $this->id_product
+        );
+
+        // Render nice notifications so the user knows what is happening
+        if ($quantities['standalone_quantity'] > 0 && $quantities['pack_quantity'] > 0) {
+            $this->info[] = $this->trans(
+                'Your cart contains %1s of these products and another %2s of these are included in packs in your cart.',
+                [$quantities['standalone_quantity'], $quantities['pack_quantity']],
+                'Shop.Theme.Catalog'
+            );
+        } elseif ($quantities['standalone_quantity'] > 0) {
+            $this->info[] = $this->trans(
+                'Your cart contains %1s of these products.',
+                [$quantities['standalone_quantity']],
+                'Shop.Theme.Catalog'
+            );
+        } elseif ($quantities['pack_quantity'] > 0) {
+            $this->info[] = $this->trans(
+                '%1s of these products are included in packs in your cart.',
+                [$quantities['pack_quantity']],
+                'Shop.Theme.Catalog'
+            );
+        }
     }
 
     /**
@@ -620,7 +646,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
         $this->quantity_discounts = $this->formatQuantityDiscounts($quantity_discounts, $product_price, (float) $tax, $this->product->ecotax);
 
         $this->context->smarty->assign([
-            'no_tax' => Tax::excludeTaxeOption() || !$tax,
+            'no_tax' => !Configuration::get('PS_TAX') || !$tax,
             'tax_enabled' => Configuration::get('PS_TAX') && !Configuration::get('AEUC_LABEL_TAX_INC_EXC'),
             'customer_group_without_tax' => Group::getPriceDisplayMethod($this->context->customer->id_default_group),
         ]);
@@ -629,7 +655,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
     /**
      * Assign template vars related to attribute groups and colors.
      */
-    protected function assignAttributesGroups($product_for_template = null)
+    protected function assignAttributesGroups(?ProductLazyArray $product_for_template = null)
     {
         $colors = [];
         $groups = [];
@@ -642,13 +668,13 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
             $combination_prices_set = [];
             foreach ($attributes_groups as $k => $row) {
                 // Color management
-                if (isset($row['is_color_group']) && $row['is_color_group'] && (isset($row['attribute_color']) && $row['attribute_color']) || (file_exists(_PS_COL_IMG_DIR_ . $row['id_attribute'] . '.jpg'))) {
+                if (isset($row['is_color_group']) && $row['is_color_group'] && (isset($row['attribute_color']) && $row['attribute_color']) || file_exists(_PS_COL_IMG_DIR_ . $row['id_attribute'] . '.jpg')) {
                     $colors[$row['id_attribute']]['value'] = $row['attribute_color'];
                     $colors[$row['id_attribute']]['name'] = $row['attribute_name'];
                     if (!isset($colors[$row['id_attribute']]['attributes_quantity'])) {
                         $colors[$row['id_attribute']]['attributes_quantity'] = 0;
                     }
-                    $colors[$row['id_attribute']]['attributes_quantity'] += (int) $row['quantity'];
+                    $colors[$row['id_attribute']]['attributes_quantity'] += max((int) $row['quantity'], 0);
                 }
                 if (!isset($groups[$row['id_attribute_group']])) {
                     $groups[$row['id_attribute_group']] = [
@@ -666,14 +692,14 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
                     'selected' => (isset($product_for_template['attributes'][$row['id_attribute_group']]['id_attribute']) && $product_for_template['attributes'][$row['id_attribute_group']]['id_attribute'] == $row['id_attribute']) ? true : false,
                 ];
 
-                //$product.attributes.$id_attribute_group.id_attribute eq $id_attribute
+                // $product.attributes.$id_attribute_group.id_attribute eq $id_attribute
                 if ($row['default_on'] && $groups[$row['id_attribute_group']]['default'] == -1) {
                     $groups[$row['id_attribute_group']]['default'] = (int) $row['id_attribute'];
                 }
                 if (!isset($groups[$row['id_attribute_group']]['attributes_quantity'][$row['id_attribute']])) {
                     $groups[$row['id_attribute_group']]['attributes_quantity'][$row['id_attribute']] = 0;
                 }
-                $groups[$row['id_attribute_group']]['attributes_quantity'][$row['id_attribute']] += (int) $row['quantity'];
+                $groups[$row['id_attribute_group']]['attributes_quantity'][$row['id_attribute']] += max((int) $row['quantity'], 0);
 
                 $this->combinations[$row['id_product_attribute']]['attributes_values'][$row['id_attribute_group']] = $row['attribute_name'];
                 $this->combinations[$row['id_product_attribute']]['attributes'][] = (int) $row['id_attribute'];
@@ -746,7 +772,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
                                 if (isset($product_images[$id_image])) {
                                     $cover = $product_images[$id_image];
                                 }
-                                $cover['id_image'] = (Configuration::get('PS_LEGACY_IMAGES') ? ($this->product->id . '-' . $id_image) : (int) $id_image);
+                                $cover['id_image'] = (int) $id_image;
                                 $cover['id_image_only'] = (int) $id_image;
                                 $this->context->smarty->assign('cover', $cover);
                             }
@@ -761,7 +787,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
             foreach ($groups as &$group) {
                 ++$count;
                 if ($count > 1) {
-                    //find attributes of current group, having a possible combination with current selected
+                    // find attributes of current group, having a possible combination with current selected
                     $id_product_attributes = [0];
                     $query = 'SELECT pac.`id_product_attribute`
                         FROM `' . _DB_PREFIX_ . 'product_attribute_combination` pac
@@ -793,7 +819,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
                         }
                     }
                 }
-                //find selected attribute or first of group
+                // find selected attribute or first of group
                 $index = 0;
                 $current_selected_attribute = 0;
                 foreach ($group['attributes'] as $key => $attribute) {
@@ -904,11 +930,11 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
         }
     }
 
-    protected function transformDescriptionWithImg($desc)
+    protected function transformDescriptionWithImg(string $desc)
     {
         $reg = '/\[img\-([0-9]+)\-(left|right)\-([a-zA-Z0-9-_]+)\]/';
         while (preg_match($reg, $desc, $matches)) {
-            $link_lmg = $this->context->link->getImageLink($this->product->link_rewrite, $this->product->id . '-' . $matches[1], $matches[3]);
+            $link_lmg = $this->context->link->getImageLink($this->product->link_rewrite, $matches[1], $matches[3]);
             $class = $matches[2] == 'left' ? 'class="imageFloatLeft"' : 'class="imageFloatRight"';
             $html_img = '<img src="' . $link_lmg . '" alt="" ' . $class . '/>';
             $desc = str_replace($matches[0], $html_img, $desc);
@@ -994,7 +1020,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
      *
      * @return array
      */
-    protected function formatQuantityDiscounts($specific_prices, $price, $tax_rate, $ecotax_amount)
+    protected function formatQuantityDiscounts(array $specific_prices, float $price, float $tax_rate, float $ecotax_amount)
     {
         $priceCalculationMethod = Group::getPriceDisplayMethod(Group::getCurrent()->id);
         $isTaxIncluded = false;
@@ -1086,7 +1112,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
      *
      * @return int
      */
-    protected function tryToGetAvailableIdProductAttribute($checkedIdProductAttribute)
+    protected function tryToGetAvailableIdProductAttribute(int $checkedIdProductAttribute)
     {
         if (!Configuration::get('PS_DISP_UNAVAILABLE_ATTR')) {
             $productCombinations = $this->product->getAttributeCombinations();
@@ -1194,9 +1220,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
         $extraContentFinder = new ProductExtraContentFinder();
 
         $product = $this->objectPresenter->present($this->product);
-        $product['id_product'] = (int) $this->product->id;
         $product['out_of_stock'] = (int) $this->product->out_of_stock;
-        $product['new'] = (int) $this->product->new;
         $product['id_product_attribute'] = $this->getIdProductAttributeByGroupOrRequestOrDefault();
         $product['minimal_quantity'] = $this->getProductMinimalQuantity($product);
         $product['quantity_wanted'] = $this->getRequiredQuantity($product);
@@ -1217,9 +1241,6 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
         );
         $product_full['quantity_label'] = ($this->product->quantity > 1) ? $this->trans('Items', [], 'Shop.Theme.Catalog') : $this->trans('Item', [], 'Shop.Theme.Catalog');
         $product_full['quantity_discounts'] = $this->quantity_discounts;
-
-        // Adapt unit price to display settings
-        $product_full['unit_price'] = $productSettings->include_taxes ? $product_full['unit_price_tax_included'] : $product_full['unit_price_tax_excluded'];
 
         $group_reduction = GroupReduction::getValueForProduct($this->product->id, (int) Group::getCurrent()->id);
         if ($group_reduction === false) {
@@ -1248,7 +1269,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
      *
      * @return int
      */
-    protected function getProductMinimalQuantity($product)
+    protected function getProductMinimalQuantity(ProductLazyArray|array $product)
     {
         $minimal_quantity = 1;
 
@@ -1300,7 +1321,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
      *
      * @return ProductController|null
      */
-    public function findProductCombinationById($combinationId)
+    public function findProductCombinationById(int $combinationId)
     {
         $combinations = $this->product->getAttributesGroups($this->context->language->id, $combinationId);
 
@@ -1316,7 +1337,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
      *
      * @return int
      */
-    protected function getRequiredQuantity($product)
+    protected function getRequiredQuantity(array $product)
     {
         $requiredQuantity = (int) Tools::getValue('quantity_wanted', $this->getProductMinimalQuantity($product));
         if ($requiredQuantity < $product['minimal_quantity']) {
@@ -1326,13 +1347,29 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
         return $requiredQuantity;
     }
 
-    public function getBreadcrumbLinks()
+    /**
+     * Generates breadcrumb according to product category tree.
+     * If the product is accessed from another category than product default category, it will generate the breadcrumb according to current category.
+     *
+     * @return array
+     *
+     * @throws PrestaShopException
+     */
+    public function getBreadcrumbLinks(): array
     {
         $breadcrumb = parent::getBreadcrumbLinks();
 
-        $categoryDefault = new Category($this->product->id_category_default, $this->context->language->id);
+        // $productBreadcrumbCategory can have two possible values
+        // - current : Category the product was accessed from
+        // - default : Product default category
+        if (('current' === Configuration::get('PS_PRODUCT_BREADCRUMB_CATEGORY'))
+            && !empty($this->category)) {
+            $productBreadcrumbCategory = $this->category;
+        } else {
+            $productBreadcrumbCategory = new Category($this->product->id_category_default, $this->context->language->id);
+        }
 
-        foreach ($categoryDefault->getAllParents() as $category) {
+        foreach ($productBreadcrumbCategory->getAllParents() as $category) {
             /** @var Category $category */
             if ($category->id_parent != 0 && !$category->is_root_category && $category->active) {
                 $breadcrumb['links'][] = [
@@ -1342,10 +1379,10 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
             }
         }
 
-        if ($categoryDefault->id_parent != 0 && !$categoryDefault->is_root_category && $categoryDefault->active) {
+        if ($productBreadcrumbCategory->id_parent != 0 && !$productBreadcrumbCategory->is_root_category && $productBreadcrumbCategory->active) {
             $breadcrumb['links'][] = [
-                'title' => $categoryDefault->name,
-                'url' => $this->context->link->getCategoryLink($categoryDefault),
+                'title' => $productBreadcrumbCategory->name,
+                'url' => $this->context->link->getCategoryLink($productBreadcrumbCategory),
             ];
         }
 
@@ -1448,6 +1485,9 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
     }
 
     /**
+     * Initializes a set of commonly used variables related to the current page, available for use
+     * in the template. @see FrontController::assignGeneralPurposeVariables for more information.
+     *
      * @return array
      */
     public function getTemplateVarPage()
@@ -1489,7 +1529,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
      *
      * @return string
      */
-    private function getProductPageTitle(array $meta = null)
+    private function getProductPageTitle(?array $meta = null)
     {
         $title = $this->product->name;
         if (isset($meta['title'])) {
@@ -1524,7 +1564,7 @@ class ProductControllerCore extends ProductPresentingFrontControllerCore
      *
      * @return bool
      */
-    protected function isValidCombination($productAttributeId, $productId)
+    protected function isValidCombination(int $productAttributeId, int $productId)
     {
         if ($productAttributeId > 0 && $productId > 0) {
             $combination = new Combination($productAttributeId);

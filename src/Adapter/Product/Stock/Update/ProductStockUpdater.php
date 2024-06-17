@@ -121,10 +121,6 @@ class ProductStockUpdater
         }
 
         $this->updateStockByShopConstraint($stockAvailable, $properties, $shopConstraint);
-
-        if ($this->isAdvancedStockEnabled($shopConstraint) && $product->depends_on_stock) {
-            StockAvailable::synchronize($product->id);
-        }
     }
 
     /**
@@ -185,10 +181,6 @@ class ProductStockUpdater
                 new OrderStateId((int) $this->configuration->get('PS_OS_ERROR', null, $shopConstraint)),
                 new OrderStateId((int) $this->configuration->get('PS_OS_CANCELED', null, $shopConstraint))
             );
-
-            if ($this->isAdvancedStockEnabled($shopConstraint)) {
-                StockAvailable::synchronize($productId->getValue(), $shopId->getValue());
-            }
         }
     }
 
@@ -273,7 +265,7 @@ class ProductStockUpdater
         $this->stockAvailableRepository->update($stockAvailable, $fallbackShopId);
 
         if ($properties->getStockModification()) {
-            //Save movement only after stock has been updated
+            // Save movement only after stock has been updated
             $this->saveMovement($stockAvailable, $properties->getStockModification(), $previousQuantity, $fallbackShopId->getValue());
 
             // Update reserved and physical quantity for this stock
@@ -322,10 +314,5 @@ class ProductStockUpdater
                 'id_shop' => (int) $affectedShopId,
             ]
         );
-    }
-
-    private function isAdvancedStockEnabled(ShopConstraint $shopConstraint): bool
-    {
-        return (bool) $this->configuration->get('PS_ADVANCED_STOCK_MANAGEMENT', null, $shopConstraint);
     }
 }

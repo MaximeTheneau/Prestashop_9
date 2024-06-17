@@ -1,0 +1,120 @@
+@import "../../config/settings";
+
+body {
+  font-size: 12px;
+}
+
+label {
+  font-size: 14px;
+}
+
+#login-panel {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+
+  #login-header {
+    padding-top: 4.5rem;
+    margin-bottom: 30px;
+    color: #6d6d6d;
+  }
+
+  #shop-img {
+    position: absolute;
+    right: 0;
+    left: 0;
+    z-index: 1;
+    width: 69.5px;
+    margin: 0 auto;
+  }
+
+  #login-content-card {
+    padding: 40px;
+    margin-top: 115px;
+
+    .submit-widget button {
+      width: 100%;
+      text-transform: uppercase;
+    }
+
+    #login_form {
+      .checkbox-widget {
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+
+        .form-external-link {
+          padding: 0.5rem 0;
+
+          a.btn {
+            padding: 0;
+            font-size: 12px;
+            font-weight: 400;
+          }
+        }
+
+        .form-check-radio {
+          flex-grow: 1;
+          margin-right: auto;
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    h4 {
+      text-align: center;
+    }
+
+    // Hide required asterisks
+    .required {
+      span.text-danger {
+        display: none;
+      }
+    }
+  }
+
+  #login-footer {
+    a {
+      color: #a0aab5;
+    }
+
+    .login-footer-social {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  a.login-back {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 400;
+    color: inherit;
+    text-decoration: none;
+    background-color: $background-grey;
+
+    i {
+      margin-right: 0.5rem;
+    }
+
+    .login-back-shop {
+      margin-left: 0.25rem;
+      color: #25b9d7;
+    }
+
+    &:hover {
+      .login-back-shop {
+        text-decoration: underline;
+      }
+    }
+  }
+}

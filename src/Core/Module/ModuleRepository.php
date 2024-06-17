@@ -178,7 +178,7 @@ class ModuleRepository implements ModuleRepositoryInterface
     public function getModulePath(string $moduleName): ?string
     {
         $path = $this->modulePath . '/' . $moduleName;
-        $filePath = $this->modulePath . '/' . $moduleName . '/' . $moduleName . '.php';
+        $filePath = $path . '/' . $moduleName . '.php';
 
         if (!is_file($filePath)) {
             return null;
@@ -211,13 +211,11 @@ class ModuleRepository implements ModuleRepositoryInterface
                         }
                     }
                 }
+            }
 
-                return true;
-            } else {
-                $cacheKey = $this->getCacheKey($moduleName);
-                if ($this->cacheProvider->contains($cacheKey)) {
-                    return $this->cacheProvider->delete($cacheKey);
-                }
+            $cacheKey = $this->getCacheKey($moduleName);
+            if ($this->cacheProvider->contains($cacheKey)) {
+                return $this->cacheProvider->delete($cacheKey);
             }
         }
 
@@ -308,7 +306,7 @@ class ModuleRepository implements ModuleRepositoryInterface
     {
         try {
             $externalModules = $this->getModulesFromHook();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $modules->addError($e);
 
             return $modules;
@@ -339,7 +337,7 @@ class ModuleRepository implements ModuleRepositoryInterface
     {
         try {
             $modulesFromHook = $this->getModulesFromHook();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return $module;
         }
 
