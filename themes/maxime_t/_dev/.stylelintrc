@@ -1,6 +1,8 @@
 {
   "extends": [
-    "stylelint-config-prestashop"
+    "stylelint-config-prestashop",
+    "stylelint-config-tailwindcss"
+
   ],
   "rules": {
     "selector-max-id": null,

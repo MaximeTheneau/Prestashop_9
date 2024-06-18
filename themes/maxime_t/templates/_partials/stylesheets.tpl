@@ -22,12 +22,6 @@
  * @copyright Since 2007 PrestaShop SA and Contributors
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
  *}
-{foreach $stylesheets.external as $stylesheet}
-  <link rel="stylesheet" href="{$stylesheet.uri}" type="text/css" media="{$stylesheet.media}">
-{/foreach}
+  <link rel="stylesheet" href="http://localhost/Prestashop_9/themes/maxime_t/assets/css/theme.css" type="text/css" media="text/css">
 
-{foreach $stylesheets.inline as $stylesheet}
-  <style>
-    {$stylesheet.content}
-  </style>
-{/foreach}
+

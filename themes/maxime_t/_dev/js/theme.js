@@ -24,10 +24,7 @@
  */
 /* eslint-disable */
 import 'expose-loader?exposes=Tether!tether';
-import 'bootstrap/dist/js/bootstrap.min';
 import 'flexibility';
-import 'bootstrap-touchspin';
-import 'jquery-touchswipe';
 import './selectors';
 
 import './responsive';
@@ -46,11 +43,8 @@ import ProductMinitature from './components/product-miniature';
 import ProductSelect from './components/product-select';
 import TopMenu from './components/top-menu';
 
-import './lib/bootstrap-filestyle.min';
-import './lib/jquery.scrollbox.min';
 
 import './components/block-cart';
-import $ from 'jquery';
 /* eslint-enable */
 
 // "inherit" EventEmitter
@@ -59,30 +53,30 @@ for (const i in EventEmitter.prototype) {
   prestashop[i] = EventEmitter.prototype[i];
 }
 
-$(document).ready(() => {
-  const dropDownEl = $('.js-dropdown');
-  const form = new Form();
-  const topMenuEl = $('.js-top-menu ul[data-depth="0"]');
-  const dropDown = new DropDown(dropDownEl);
-  const topMenu = new TopMenu(topMenuEl);
-  const productMinitature = new ProductMinitature();
-  const productSelect = new ProductSelect();
-  dropDown.init();
-  form.init();
-  topMenu.init();
-  productMinitature.init();
-  productSelect.init();
-  usePasswordPolicy('.field-password-policy');
+// $(document).ready(() => {
+//   const dropDownEl = $('.js-dropdown');
+//   const form = new Form();
+//   const topMenuEl = $('.js-top-menu ul[data-depth="0"]');
+//   const dropDown = new DropDown(dropDownEl);
+//   const topMenu = new TopMenu(topMenuEl);
+//   const productMinitature = new ProductMinitature();
+//   const productSelect = new ProductSelect();
+//   dropDown.init();
+//   form.init();
+//   topMenu.init();
+//   productMinitature.init();
+//   productSelect.init();
+//   usePasswordPolicy('.field-password-policy');
 
-  $('.carousel[data-touch="true"]').swipe({
-    swipe(event, direction) {
-      if (direction === 'left') {
-        $(this).carousel('next');
-      }
-      if (direction === 'right') {
-        $(this).carousel('prev');
-      }
-    },
-    allowPageScroll: 'vertical',
-  });
-});
+//   $('.carousel[data-touch="true"]').swipe({
+//     swipe(event, direction) {
+//       if (direction === 'left') {
+//         $(this).carousel('next');
+//       }
+//       if (direction === 'right') {
+//         $(this).carousel('prev');
+//       }
+//     },
+//     allowPageScroll: 'vertical',
+//   });
+// });

@@ -19,11 +19,11 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./_dev
-        run: npm i
+        run: pnpm i
 
       - name: Build assets
         working-directory: ./_dev
-        run: npm run build
+        run: pnpm run build
 
       - name: Remove unuseful data
         run: |
