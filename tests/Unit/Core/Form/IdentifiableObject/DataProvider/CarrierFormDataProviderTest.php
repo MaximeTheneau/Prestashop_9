@@ -30,6 +30,7 @@ use PHPUnit\Framework\TestCase;
 use PrestaShop\PrestaShop\Core\CommandBus\CommandBusInterface;
 use PrestaShop\PrestaShop\Core\Domain\Carrier\Query\GetCarrierForEditing;
 use PrestaShop\PrestaShop\Core\Domain\Carrier\QueryResult\EditableCarrier;
+use PrestaShop\PrestaShop\Core\Domain\Carrier\ValueObject\OutOfRangeBehavior;
 use PrestaShop\PrestaShop\Core\Form\IdentifiableObject\DataProvider\CarrierFormDataProvider;
 
 class CarrierFormDataProviderTest extends TestCase
@@ -51,6 +52,16 @@ class CarrierFormDataProviderTest extends TestCase
                     1 => 'English delay',
                     2 => 'French delay',
                 ],
+                1234,
+                1123,
+                3421,
+                1657,
+                [1, 2, 3],
+                false,
+                true,
+                1,
+                1,
+                OutOfRangeBehavior::USE_HIGHEST_RANGE,
                 '/img/c/45.jkg',
             ))
         ;
@@ -66,8 +77,22 @@ class CarrierFormDataProviderTest extends TestCase
                 ],
                 'active' => true,
                 'grade' => 5,
+                'group_access' => [1, 2, 3],
                 'logo_preview' => '/img/c/45.jkg',
                 'tracking_url' => 'http://track.to',
+            ],
+            'shipping_settings' => [
+                'has_additional_handling_fee' => false,
+                'is_free' => true,
+                'shipping_method' => 1,
+                'id_tax_rule_group' => 1,
+                'range_behavior' => OutOfRangeBehavior::USE_HIGHEST_RANGE,
+            ],
+            'size_weight_settings' => [
+                'max_width' => 1234,
+                'max_height' => 1123,
+                'max_depth' => 3421,
+                'max_weight' => 1657,
             ],
         ], $formData);
     }

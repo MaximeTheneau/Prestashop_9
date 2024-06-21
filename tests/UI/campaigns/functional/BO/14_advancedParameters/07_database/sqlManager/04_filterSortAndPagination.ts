@@ -1,6 +1,4 @@
 // Import utils
-import basicHelper from '@utils/basicHelper';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -10,12 +8,14 @@ import loginCommon from '@commonTests/BO/loginBO';
 import sqlManagerPage from '@pages/BO/advancedParameters/database/sqlManager';
 import addSqlQueryPage from '@pages/BO/advancedParameters/database/sqlManager/add';
 
-// Import data
-import SqlQueryData from '@data/faker/sqlQuery';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerSqlQuery,
+  utilsCore,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_advancedParameters_database_sqlManager_filterSortAndPagination';
 
@@ -35,12 +35,12 @@ describe('BO - Advanced Parameters - Database : Filter, sort and pagination SQL 
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {
@@ -75,7 +75,7 @@ describe('BO - Advanced Parameters - Database : Filter, sort and pagination SQL 
   describe('Create 11 SQL queries in BO', async () => {
     const creationTests: number[] = new Array(11).fill(0, 0, 11);
     creationTests.forEach((test: number, index: number) => {
-      const sqlQueryData = new SqlQueryData({name: `todelete${index}`, tableName: `${dbPrefix}alias`});
+      const sqlQueryData: FakerSqlQuery = new FakerSqlQuery({name: `todelete${index}`, tableName: `${dbPrefix}alias`});
 
       it('should go to add new SQL query page', async function () {
         await testContext.addContextItem(this, 'testIdentifier', `goToAddSqlQueryPage${index}`, baseContext);
@@ -229,7 +229,7 @@ describe('BO - Advanced Parameters - Database : Filter, sort and pagination SQL 
           const nonSortedTableFloat: number[] = nonSortedTable.map((text: string): number => parseFloat(text));
           const sortedTableFloat: number[] = sortedTable.map((text: string): number => parseFloat(text));
 
-          const expectedResult = await basicHelper.sortArrayNumber(nonSortedTableFloat);
+          const expectedResult = await utilsCore.sortArrayNumber(nonSortedTableFloat);
 
           if (test.args.sortDirection === 'asc') {
             expect(sortedTableFloat).to.deep.equal(expectedResult);
@@ -237,7 +237,7 @@ describe('BO - Advanced Parameters - Database : Filter, sort and pagination SQL 
             expect(sortedTableFloat).to.deep.equal(expectedResult.reverse());
           }
         } else {
-          const expectedResult = await basicHelper.sortArray(nonSortedTable);
+          const expectedResult = await utilsCore.sortArray(nonSortedTable);
 
           if (test.args.sortDirection === 'asc') {
             expect(sortedTable).to.deep.equal(expectedResult);

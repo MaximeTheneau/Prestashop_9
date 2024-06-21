@@ -1,6 +1,4 @@
 // Import utils
-import basicHelper from '@utils/basicHelper';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -10,12 +8,14 @@ import loginCommon from '@commonTests/BO/loginBO';
 import webservicePage from '@pages/BO/advancedParameters/webservice';
 import addWebservicePage from '@pages/BO/advancedParameters/webservice/add';
 
-// Import data
-import WebserviceData from '@data/faker/webservice';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerWebservice,
+  utilsCore,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_advancedParameters_webservice_filterSortPagination';
 
@@ -34,12 +34,12 @@ describe('BO - Advanced Parameters - Webservice : Filter, Sort and pagination we
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {
@@ -73,11 +73,10 @@ describe('BO - Advanced Parameters - Webservice : Filter, Sort and pagination we
   describe('Create 11 webservice keys in BO', async () => {
     const creationTests: number[] = new Array(11).fill(0, 0, 11);
     creationTests.forEach((test: number, index: number) => {
-      const webserviceData: WebserviceData = new WebserviceData(
-        {
-          key: `JYGPBFGYHXAP3J6BV42C27ABLW7XJC1${index}`,
-          keyDescription: `todelete${index}`,
-        });
+      const webserviceData: FakerWebservice = new FakerWebservice({
+        key: `JYGPBFGYHXAP3J6BV42C27ABLW7XJC1${index}`,
+        keyDescription: `todelete${index}`,
+      });
 
       it('should go to add new webservice key page', async function () {
         await testContext.addContextItem(this, 'testIdentifier', `goToAddNewWebserviceKeyPage_${index}`, baseContext);
@@ -213,7 +212,7 @@ describe('BO - Advanced Parameters - Webservice : Filter, Sort and pagination we
         await webservicePage.sortTable(page, test.args.sortBy, test.args.sortDirection);
 
         const sortedTable = await webservicePage.getAllRowsColumnContent(page, test.args.sortBy);
-        const expectedResult = await basicHelper.sortArray(nonSortedTable);
+        const expectedResult = await utilsCore.sortArray(nonSortedTable);
 
         if (test.args.sortDirection === 'asc') {
           expect(sortedTable).to.deep.equal(expectedResult);

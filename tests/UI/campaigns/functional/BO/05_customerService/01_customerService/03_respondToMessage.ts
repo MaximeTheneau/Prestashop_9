@@ -1,8 +1,5 @@
 // Import utils
-import files from '@utils/files';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import mailHelper from '@utils/mailHelper';
 
 // Import commonTests
 import loginCommon from '@commonTests/BO/loginBO';
@@ -16,14 +13,17 @@ import viewPage from '@pages/BO/customerService/customerService/view';
 import {contactUsPage} from '@pages/FO/classic/contactUs';
 import {homePage} from '@pages/FO/classic/home';
 
-// Import data
-import MessageData from '@data/faker/message';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import MailDevEmail from '@data/types/maildevEmail';
-import MailDev from 'maildev';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerContactMessage,
+  type MailDev,
+  type MailDevEmail,
+  utilsFile,
+  utilsMail,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_customerService_customerService_respondToMessage';
 
@@ -44,7 +44,7 @@ describe('BO - Customer Service : Respond to message', async () => {
   let newMail: MailDevEmail;
   let mailListener: MailDev;
 
-  const contactUsData: MessageData = new MessageData({subject: 'Customer service'});
+  const contactUsData: FakerContactMessage = new FakerContactMessage({subject: 'Customer service'});
   const answerMessage = 'My response';
 
   // Pre-Condition : Setup config SMTP
@@ -52,28 +52,28 @@ describe('BO - Customer Service : Respond to message', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
     // Start listening to maildev server
-    mailListener = mailHelper.createMailListener();
-    mailHelper.startListener(mailListener);
+    mailListener = utilsMail.createMailListener();
+    utilsMail.startListener(mailListener);
 
     // Handle every new email
     mailListener.on('new', (email: MailDevEmail) => {
       newMail = email;
     });
 
-    await files.generateImage(`${contactUsData.fileName}.jpg`);
+    await utilsFile.generateImage(`${contactUsData.fileName}.jpg`);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
 
     // Stop listening to maildev server
-    mailHelper.stopListener(mailListener);
+    utilsMail.stopListener(mailListener);
 
-    await files.deleteFile(`${contactUsData.fileName}.jpg`);
+    await utilsFile.deleteFile(`${contactUsData.fileName}.jpg`);
   });
 
   describe('FO : Send message', async () => {

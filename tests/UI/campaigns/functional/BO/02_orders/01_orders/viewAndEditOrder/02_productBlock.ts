@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -20,17 +19,16 @@ import addProductPage from '@pages/BO/catalog/products/add';
 import ordersPage from '@pages/BO/orders';
 import orderPageProductsBlock from '@pages/BO/orders/view/productsBlock';
 
-// Import data
-import CartRuleData from '@data/faker/cartRule';
-
 import {
   boDashboardPage,
   dataPaymentMethods,
   dataProducts,
   FakerAddress,
+  FakerCartRule,
   FakerCustomer,
   FakerOrder,
   FakerProduct,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -197,7 +195,7 @@ describe('BO - Orders - View and edit order : Check product block in view order 
     lowStockLevel: 3,
     behaviourOutOfStock: 'Default behavior',
   });
-  const newCartRuleData: CartRuleData = new CartRuleData({
+  const newCartRuleData: FakerCartRule = new FakerCartRule({
     code: '4QABV6L3',
     discountType: 'Percent',
     discountPercent: 20,
@@ -215,12 +213,12 @@ describe('BO - Orders - View and edit order : Check product block in view order 
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {

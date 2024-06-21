@@ -1,8 +1,5 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import MailDevEmail from '@data/types/maildevEmail';
-import mailHelper from '@utils/mailHelper';
 
 // Import commonTests
 import loginCommon from '@commonTests/BO/loginBO';
@@ -22,13 +19,15 @@ import {createAccountPage} from '@pages/FO/classic/myAccount/add';
 
 import {
   boDashboardPage,
-  // Import data
   FakerCustomer,
+  type MailDev,
+  type MailDevEmail,
+  utilsMail,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import MailDev from 'maildev';
 
 const baseContext: string = 'functional_BO_shopParameters_customerSettings_customers_sendEmailAfterRegistration';
 
@@ -52,12 +51,12 @@ describe('BO - Shop Parameters - Customer Settings : Enable/Disable send an emai
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
     // Start listening to maildev server
-    mailListener = mailHelper.createMailListener();
-    mailHelper.startListener(mailListener);
+    mailListener = utilsMail.createMailListener();
+    utilsMail.startListener(mailListener);
 
     // Handle every new email
     mailListener.on('new', (email: MailDevEmail) => {
@@ -69,10 +68,10 @@ describe('BO - Shop Parameters - Customer Settings : Enable/Disable send an emai
   setupSmtpConfigTest(baseContext);
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
 
     // Stop listening to maildev server
-    mailHelper.stopListener(mailListener);
+    utilsMail.stopListener(mailListener);
   });
 
   describe('Enable/Disable send an email after registration', async () => {

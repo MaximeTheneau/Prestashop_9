@@ -28,11 +28,21 @@ declare(strict_types=1);
 
 namespace PrestaShop\PrestaShop\Core\Domain\Carrier\Command;
 
+use PrestaShop\PrestaShop\Core\Domain\Carrier\Exception\CarrierConstraintException;
+use PrestaShop\PrestaShop\Core\Domain\Carrier\ValueObject\OutOfRangeBehavior;
+use PrestaShop\PrestaShop\Core\Domain\Carrier\ValueObject\ShippingMethod;
+
 /**
  * Command aim to add carrier
  */
 class AddCarrierCommand
 {
+    private ShippingMethod $shippingMethod;
+    private OutOfRangeBehavior $rangeBehavior;
+
+    /**
+     * @throws CarrierConstraintException
+     */
     public function __construct(
         private string $name,
         /** @var string[] $localizedDelay */
@@ -41,8 +51,20 @@ class AddCarrierCommand
         private string $trackingUrl,
         private int $position,
         private bool $active,
-        private ?string $logoPathName,
+        private array $associatedGroupIds,
+        private bool $hasAdditionalHandlingFee,
+        private bool $isFree,
+        int $shippingMethod,
+        private int $idTaxRuleGroup,
+        int $rangeBehavior,
+        private int $max_width = 0,
+        private int $max_height = 0,
+        private int $max_depth = 0,
+        private float $max_weight = 0,
+        private ?string $logoPathName = null
     ) {
+        $this->shippingMethod = new ShippingMethod($shippingMethod);
+        $this->rangeBehavior = new OutOfRangeBehavior($rangeBehavior);
     }
 
     public function getName(): string
@@ -76,8 +98,58 @@ class AddCarrierCommand
         return $this->active;
     }
 
+    public function getMaxWidth(): int
+    {
+        return $this->max_width;
+    }
+
+    public function getMaxHeight(): int
+    {
+        return $this->max_height;
+    }
+
+    public function getMaxDepth(): int
+    {
+        return $this->max_depth;
+    }
+
+    public function getMaxWeight(): float
+    {
+        return $this->max_weight;
+    }
+
+    public function getAssociatedGroupIds(): array
+    {
+        return $this->associatedGroupIds;
+    }
+
     public function getLogoPathName(): ?string
     {
         return $this->logoPathName;
+    }
+
+    public function hasAdditionalHandlingFee(): bool
+    {
+        return $this->hasAdditionalHandlingFee;
+    }
+
+    public function isFree(): bool
+    {
+        return $this->isFree;
+    }
+
+    public function getShippingMethod(): ShippingMethod
+    {
+        return $this->shippingMethod;
+    }
+
+    public function getTaxRuleGroupId(): int
+    {
+        return $this->idTaxRuleGroup;
+    }
+
+    public function getRangeBehavior(): OutOfRangeBehavior
+    {
+        return $this->rangeBehavior;
     }
 }

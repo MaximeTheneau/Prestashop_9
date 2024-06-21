@@ -1,6 +1,4 @@
 // Import utils
-import api from '@utils/api';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -12,14 +10,14 @@ import apiClientPage from '@pages/BO/advancedParameters/APIClient';
 import addNewApiClientPage from '@pages/BO/advancedParameters/APIClient/add';
 import {moduleManager} from '@pages/BO/modules/moduleManager';
 
-// Import data
-import APIClientData from '@data/faker/APIClient';
-
 import {
   boDashboardPage,
   boModuleManagerPage,
+  FakerAPIClient,
   FakerModule,
   type ModuleInfo,
+  utilsAPI,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 import {expect} from 'chai';
 import type {APIRequestContext, BrowserContext, Page} from 'playwright';
@@ -36,7 +34,7 @@ describe('API : GET /modules', async () => {
   const jsonResponseItems: ModuleInfo [] = [];
 
   const clientScope: string = 'module_read';
-  const clientData: APIClientData = new APIClientData({
+  const clientData: FakerAPIClient = new FakerAPIClient({
     enabled: true,
     scopes: [
       clientScope,
@@ -44,14 +42,14 @@ describe('API : GET /modules', async () => {
   });
 
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
-    apiContext = await helper.createAPIContext(global.API.URL);
+    apiContext = await utilsPlaywright.createAPIContext(global.API.URL);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe('BackOffice : Fetch the access token', async () => {
@@ -119,8 +117,8 @@ describe('API : GET /modules', async () => {
         },
       });
       expect(apiResponse.status()).to.eq(200);
-      expect(api.hasResponseHeader(apiResponse, 'Content-Type')).to.eq(true);
-      expect(api.getResponseHeader(apiResponse, 'Content-Type')).to.contains('application/json');
+      expect(utilsAPI.hasResponseHeader(apiResponse, 'Content-Type')).to.eq(true);
+      expect(utilsAPI.getResponseHeader(apiResponse, 'Content-Type')).to.contains('application/json');
 
       const jsonResponse = await apiResponse.json();
       expect(jsonResponse).to.have.property('access_token');
@@ -148,8 +146,8 @@ describe('API : GET /modules', async () => {
           },
         });
         expect(apiResponse.status()).to.eq(200);
-        expect(api.hasResponseHeader(apiResponse, 'Content-Type')).to.eq(true);
-        expect(api.getResponseHeader(apiResponse, 'Content-Type')).to.contains('application/json');
+        expect(utilsAPI.hasResponseHeader(apiResponse, 'Content-Type')).to.eq(true);
+        expect(utilsAPI.getResponseHeader(apiResponse, 'Content-Type')).to.contains('application/json');
 
         jsonResponse = await apiResponse.json();
       });

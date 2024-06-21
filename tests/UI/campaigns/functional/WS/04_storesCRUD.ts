@@ -1,7 +1,5 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import xml from '@utils/xml';
 
 // Import webservices
 import StoreWS from '@webservices/store/storeWS';
@@ -18,14 +16,18 @@ import storesPage from '@pages/BO/shopParameters/stores';
 import addStorePage from '@pages/BO/shopParameters/stores/add';
 
 // Import data
-import {WebservicePermission} from '@data/types/webservice';
 import {getStoreXml, getUpdateStoreXml} from '@data/xml/store';
 
 import {expect} from 'chai';
 import type {
   APIResponse, APIRequestContext, BrowserContext, Page,
 } from 'playwright';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  utilsPlaywright,
+  utilsXML,
+  type WebservicePermission,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_WS_storesCRUD';
 
@@ -53,14 +55,14 @@ describe('WS - Stores : CRUD', async () => {
   const week = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
-    apiContext = await helper.createAPIContext(global.FO.URL);
+    apiContext = await utilsPlaywright.createAPIContext(global.FO.URL);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   // Enable webservice
@@ -129,7 +131,7 @@ describe('WS - Stores : CRUD', async () => {
 
         xmlResponse = await apiResponse.text();
 
-        const isValidXML = xml.isValid(xmlResponse);
+        const isValidXML = utilsXML.isValid(xmlResponse);
         expect(isValidXML).to.eq(true);
       });
 
@@ -161,7 +163,7 @@ describe('WS - Stores : CRUD', async () => {
           expect(nodeAttributes.length).to.be.eq(0);
 
           // Empty value
-          const isEmptyNode: boolean = xml.isEmpty(node);
+          const isEmptyNode: boolean = utilsXML.isEmpty(node);
           expect(isEmptyNode, `The node ${node.nodeName} is not empty`).to.eq(true);
         }
       });
@@ -186,7 +188,7 @@ describe('WS - Stores : CRUD', async () => {
 
         xmlResponse = await apiResponse.text();
 
-        const isValidXML = xml.isValid(xmlResponse);
+        const isValidXML = utilsXML.isValid(xmlResponse);
         expect(isValidXML).to.eq(true);
       });
 
@@ -223,7 +225,7 @@ describe('WS - Stores : CRUD', async () => {
           }
 
           // Empty value
-          const isEmptyNode = xml.isEmpty(node);
+          const isEmptyNode = utilsXML.isEmpty(node);
           expect(isEmptyNode, `The node ${node.nodeName} is not empty`).to.eq(true);
         }
       });

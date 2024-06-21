@@ -1,4 +1,3 @@
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import common tests
@@ -16,14 +15,13 @@ import productsPage from '@pages/BO/catalog/products';
 // Import FO pages
 import {homePage} from '@pages/FO/classic/home';
 
-// Import data
-import ShopData from '@data/faker/shop';
-
 import type {BrowserContext, Page} from 'playwright';
 import {expect} from 'chai';
 import {
   boDashboardPage,
   FakerProduct,
+  FakerShop,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_catalog_products_multistore';
@@ -31,7 +29,7 @@ const baseContext: string = 'functional_BO_catalog_products_multistore';
 describe('BO - Catalog - Products : Multistore', async () => {
   let browserContext: BrowserContext;
   let page: Page;
-  const createShopData: ShopData = new ShopData({name: 'newShop', shopGroup: 'Default', categoryRoot: 'Home'});
+  const createShopData: FakerShop = new FakerShop({name: 'newShop', shopGroup: 'Default', categoryRoot: 'Home'});
 
   // Data to create standard product
   const newProductData: FakerProduct = new FakerProduct({
@@ -53,12 +51,12 @@ describe('BO - Catalog - Products : Multistore', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe('Create new store and set URL', async () => {
@@ -126,7 +124,7 @@ describe('BO - Catalog - Products : Multistore', async () => {
       await productsPage.closeSfToolBar(page);
 
       const pageTitle = await productsPage.getPageTitle(page);
-      await expect(pageTitle).to.contains(productsPage.pageTitle);
+      expect(pageTitle).to.contains(productsPage.pageTitle);
     });
 
     it('should click on multistore header and select the new shop', async function () {
@@ -167,7 +165,7 @@ describe('BO - Catalog - Products : Multistore', async () => {
       await testContext.addContextItem(this, 'testIdentifier', 'clickOnNewProductButton', baseContext);
 
       const isModalVisible = await productsPage.clickOnNewProductButton(page);
-      await expect(isModalVisible).to.be.true;
+      expect(isModalVisible).to.equals(true);
     });
 
     it('should choose \'Standard product\' and go to new product page', async function () {
@@ -177,14 +175,14 @@ describe('BO - Catalog - Products : Multistore', async () => {
       await productsPage.clickOnAddNewProduct(page);
 
       const pageTitle = await createProductPage.getPageTitle(page);
-      await expect(pageTitle).to.contains(createProductPage.pageTitle);
+      expect(pageTitle).to.contains(createProductPage.pageTitle);
     });
 
     it('should create standard product', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'createStandardProduct', baseContext);
 
       const createProductMessage = await createProductPage.setProduct(page, newProductData);
-      await expect(createProductMessage).to.equal(createProductPage.successfulUpdateMessage);
+      expect(createProductMessage).to.equal(createProductPage.successfulUpdateMessage);
     });
 
     it('should go back to catalog page', async function () {
@@ -193,7 +191,7 @@ describe('BO - Catalog - Products : Multistore', async () => {
       await createProductPage.goToCatalogPage(page);
 
       const pageTitle = await productsPage.getPageTitle(page);
-      await expect(pageTitle).to.contains(productsPage.pageTitle);
+      expect(pageTitle).to.contains(productsPage.pageTitle);
     });
 
     it('should click on multistore header and select the default shop', async function () {

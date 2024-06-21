@@ -1,7 +1,5 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import files from '@utils/files';
 
 // Import common tests
 import loginCommon from '@commonTests/BO/loginBO';
@@ -16,14 +14,14 @@ import filesPage from '@pages/BO/catalog/files';
 // Import FO pages
 import {productPage as foProductPage} from '@pages/FO/classic/product';
 
-// Import data
-import {ProductFeatures} from '@data/types/product';
-
 import type {BrowserContext, Page} from 'playwright';
 import {expect} from 'chai';
 import {
   boDashboardPage,
   FakerProduct,
+  type ProductFeatures,
+  utilsFile,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_catalog_products_detailsTab';
@@ -98,16 +96,16 @@ describe('BO - Catalog - Products : Details tab', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
-    await files.generateImage(editProductData.files[0].file);
+    await utilsFile.generateImage(editProductData.files[0].file);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
 
-    await files.deleteFile(editProductData.files[0].file);
+    await utilsFile.deleteFile(editProductData.files[0].file);
   });
 
   // 1 - Create product

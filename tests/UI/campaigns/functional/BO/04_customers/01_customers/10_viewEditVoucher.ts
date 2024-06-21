@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -11,13 +10,11 @@ import customersPage from '@pages/BO/customers';
 import viewCustomerPage from '@pages/BO/customers/view';
 import editRulesPage from '@pages/BO/catalog/discounts/add';
 
-// Import data
-import CartRuleData from '@data/faker/cartRule';
-
 import {
   boDashboardPage,
-  // Import data
   dataCustomers,
+  FakerCartRule,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -30,7 +27,7 @@ describe('BO - Customers - Customers : View/edit voucher', async () => {
   let page: Page;
 
   // Data to create cart rule
-  const newCartRuleData: CartRuleData = new CartRuleData({
+  const newCartRuleData: FakerCartRule = new FakerCartRule({
     name: 'reduction',
     customer: dataCustomers.johnDoe,
     discountType: 'Amount',
@@ -41,7 +38,7 @@ describe('BO - Customers - Customers : View/edit voucher', async () => {
     },
   });
 
-  const editCartRuleData: CartRuleData = new CartRuleData({
+  const editCartRuleData: FakerCartRule = new FakerCartRule({
     name: 'reduction',
     description: 'abkjbhvggfvfi',
     discountType: 'Amount',
@@ -57,12 +54,12 @@ describe('BO - Customers - Customers : View/edit voucher', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe('View voucher', async () => {

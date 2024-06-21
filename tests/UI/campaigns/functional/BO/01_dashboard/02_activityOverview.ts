@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import BO pages
@@ -36,17 +35,16 @@ import {enableMerchandiseReturns, disableMerchandiseReturns} from '@commonTests/
 import {deleteProductTest} from '@commonTests/BO/catalog/product';
 import {deleteCustomerTest} from '@commonTests/BO/customers/customer';
 
-// Import data
-import MessageData from '@data/faker/message';
-
 import {
   boDashboardPage,
   dataCustomers,
   dataOrders,
   dataOrderStatuses,
   dataPaymentMethods,
+  FakerContactMessage,
   FakerCustomer,
   FakerProduct,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -73,7 +71,7 @@ describe('BO - Dashboard : Activity overview', async () => {
     status: true,
   });
 
-  const contactUsData: MessageData = new MessageData({
+  const contactUsData: FakerContactMessage = new FakerContactMessage({
     subject: 'Customer service',
     reference: dataOrders.order_1.reference,
   });
@@ -84,12 +82,12 @@ describe('BO - Dashboard : Activity overview', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe('Check Online visitor & Active shopping carts', async () => {

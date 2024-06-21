@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -15,14 +14,13 @@ import cmsPage from '@pages/FO/classic/cms';
 import {homePage as foHomePage} from '@pages/FO/classic/home';
 import {siteMapPage} from '@pages/FO/classic/siteMap';
 
-// Import data
-import CMSCategoryData from '@data/faker/CMScategory';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
 import {
   boDashboardPage,
+  FakerCMSCategory,
   FakerCMSPage,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_design_pages_CRUDPageCategory';
@@ -41,8 +39,8 @@ describe('BO - Design - Pages : CRUD category and page', async () => {
   let numberOfPages: number = 0;
   let categoryID: number = 0;
 
-  const createCategoryData: CMSCategoryData = new CMSCategoryData();
-  const editCategoryData: CMSCategoryData = new CMSCategoryData({name: `update${createCategoryData.name}`});
+  const createCategoryData: FakerCMSCategory = new FakerCMSCategory();
+  const editCategoryData: FakerCMSCategory = new FakerCMSCategory({name: `update${createCategoryData.name}`});
   const createPageData: FakerCMSPage = new FakerCMSPage();
   const editPageData: FakerCMSPage = new FakerCMSPage({
     displayed: false,
@@ -53,12 +51,12 @@ describe('BO - Design - Pages : CRUD category and page', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {

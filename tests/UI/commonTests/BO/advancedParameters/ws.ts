@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -11,9 +10,12 @@ import webservicePage from '@pages/BO/advancedParameters/webservice';
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
 import addWebservicePage from '@pages/BO/advancedParameters/webservice/add';
-import WebserviceData from '@data/faker/webservice';
-import {WebservicePermission} from '@data/types/webservice';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerWebservice,
+  utilsPlaywright,
+  type WebservicePermission,
+} from '@prestashop-core/ui-testing';
 
 let browserContext: BrowserContext;
 let page: Page;
@@ -27,12 +29,12 @@ function setWebserviceStatus(status: boolean, baseContext: string = 'commonTests
   describe(`${status ? 'Enable' : 'Disable'} the Webservice`, async () => {
     // before and after functions
     before(async function () {
-      browserContext = await helper.createBrowserContext(this.browser);
-      page = await helper.newTab(browserContext);
+      browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+      page = await utilsPlaywright.newTab(browserContext);
     });
 
     after(async () => {
-      await helper.closeBrowserContext(browserContext);
+      await utilsPlaywright.closeBrowserContext(browserContext);
     });
 
     it('should login in BO', async function () {
@@ -70,19 +72,19 @@ function addWebserviceKey(
   describe(`Add a new webservice key named "${keyDescription}"`, async () => {
     let numberOfWebserviceKeys: number = 0;
 
-    const webserviceData: WebserviceData = new WebserviceData({
+    const webserviceData: FakerWebservice = new FakerWebservice({
       keyDescription,
       permissions: keyPermissions,
     });
 
     // before and after functions
     before(async function () {
-      browserContext = await helper.createBrowserContext(this.browser);
-      page = await helper.newTab(browserContext);
+      browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+      page = await utilsPlaywright.newTab(browserContext);
     });
 
     after(async () => {
-      await helper.closeBrowserContext(browserContext);
+      await utilsPlaywright.closeBrowserContext(browserContext);
     });
 
     it('should login in BO', async function () {
@@ -136,12 +138,12 @@ function removeWebserviceKey(keyDescription: string, baseContext: string = 'comm
 
     // before and after functions
     before(async function () {
-      browserContext = await helper.createBrowserContext(this.browser);
-      page = await helper.newTab(browserContext);
+      browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+      page = await utilsPlaywright.newTab(browserContext);
     });
 
     after(async () => {
-      await helper.closeBrowserContext(browserContext);
+      await utilsPlaywright.closeBrowserContext(browserContext);
     });
 
     it('should login in BO', async function () {

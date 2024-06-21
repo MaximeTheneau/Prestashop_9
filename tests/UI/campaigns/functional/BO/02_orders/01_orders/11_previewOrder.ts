@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -20,9 +19,6 @@ import {homePage} from '@pages/FO/classic/home';
 import {productPage} from '@pages/FO/classic/product';
 import {searchResultsPage} from '@pages/FO/classic/searchResults';
 
-// Import data
-import OrderShippingData from '@data/faker/orderShipping';
-
 import {
   boDashboardPage,
   dataCarriers,
@@ -30,6 +26,8 @@ import {
   dataProducts,
   FakerAddress,
   FakerCustomer,
+  FakerOrderShipping,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -57,19 +55,19 @@ describe('BO - Orders : Preview order', async () => {
   const addressData: FakerAddress = new FakerAddress({country: 'France'});
   const editShippingAddressData: FakerAddress = new FakerAddress({country: 'France'});
   const editInvoiceAddressData: FakerAddress = new FakerAddress({country: 'France'});
-  const shippingDetailsData: OrderShippingData = new OrderShippingData({
+  const shippingDetailsData: FakerOrderShipping = new FakerOrderShipping({
     trackingNumber: '123654789',
     carrier: dataCarriers.myCarrier.name,
     carrierID: dataCarriers.myCarrier.id,
   });
 
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   // Pre-condition: Create order contains 11 products by guest in FO

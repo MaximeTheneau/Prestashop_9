@@ -1,6 +1,4 @@
 // Import utils
-import date from '@utils/date';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -11,9 +9,6 @@ import {createOrderByCustomerTest} from '@commonTests/FO/classic/order';
 import ordersPage from '@pages/BO/orders';
 import orderPageTabListBlock from '@pages/BO/orders/view/tabListBlock';
 
-// Import data
-import OrderShippingData from '@data/faker/orderShipping';
-
 import {
   boDashboardPage,
   dataCarriers,
@@ -21,6 +16,9 @@ import {
   dataPaymentMethods,
   dataProducts,
   FakerOrder,
+  FakerOrderShipping,
+  utilsDate,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -41,8 +39,8 @@ describe('BO - Orders - View and edit order : Check order carriers tab', async (
   let browserContext: BrowserContext;
   let page: Page;
 
-  const today: string = date.getDateFormat('mm/dd/yyyy');
-  const shippingDetailsData: OrderShippingData = new OrderShippingData({
+  const today: string = utilsDate.getDateFormat('mm/dd/yyyy');
+  const shippingDetailsData: FakerOrderShipping = new FakerOrderShipping({
     trackingNumber: '0523698',
     carrier: dataCarriers.myCarrier.name,
     carrierID: dataCarriers.myCarrier.id,
@@ -65,12 +63,12 @@ describe('BO - Orders - View and edit order : Check order carriers tab', async (
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   // 1 - Go to view order page

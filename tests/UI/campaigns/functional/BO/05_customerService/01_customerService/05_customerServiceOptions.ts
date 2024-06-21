@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -8,12 +7,13 @@ import loginCommon from '@commonTests/BO/loginBO';
 // Import pages
 import customerServicePage from '@pages/BO/customerService/customerService';
 
-// Import data
-import CustomerServiceOptionsData from '@data/faker/customerServiceOptions';
-
 import {BrowserContext, Page} from 'playwright';
 import {expect} from 'chai';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerCustomerServiceOptions,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_customerService_customerService_customerServiceOptions';
 
@@ -21,7 +21,7 @@ describe('BO - Customer Service : Customer service options', async () => {
   let browserContext: BrowserContext;
   let page: Page;
 
-  const optionsData: CustomerServiceOptionsData = new CustomerServiceOptionsData({
+  const optionsData: FakerCustomerServiceOptions = new FakerCustomerServiceOptions({
     imapUrl: 'outlook.office365.com',
     imapPort: '993',
     imapUser: 'presta_test@outlook.fr',
@@ -33,12 +33,12 @@ describe('BO - Customer Service : Customer service options', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {

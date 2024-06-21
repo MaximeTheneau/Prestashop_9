@@ -1,6 +1,4 @@
 // Import utils
-import basicHelper from '@utils/basicHelper';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -12,12 +10,14 @@ import multiStorePage from '@pages/BO/advancedParameters/multistore';
 import addShopPage from '@pages/BO/advancedParameters/multistore/shop/add';
 import shopPage from '@pages/BO/advancedParameters/multistore/shop';
 
-// Import data
-import ShopData from '@data/faker/shop';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerShop,
+  utilsCore,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_advancedParameters_multistore_filterSortAndPaginationShops';
 
@@ -33,19 +33,19 @@ Disable multistore
 describe('BO - Advanced Parameters - Multistore : Filter, sort and pagination shops', async () => {
   let browserContext: BrowserContext;
   let page: Page;
-  const shopCreate: ShopData = new ShopData({name: 'todelete0', shopGroup: 'Default', categoryRoot: 'Home'});
+  const shopCreate: FakerShop = new FakerShop({name: 'todelete0', shopGroup: 'Default', categoryRoot: 'Home'});
 
   //Pre-condition: Enable multistore
   setMultiStoreStatus(true, `${baseContext}_preTest`);
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   // 2 : Go to multistore page
@@ -88,7 +88,7 @@ describe('BO - Advanced Parameters - Multistore : Filter, sort and pagination sh
   // 3 : Create 19 shops
   describe('Create 19 shops', async () => {
     Array(19).fill(0, 0, 19).forEach((test: number, index: number) => {
-      const shopCreate: ShopData = new ShopData({
+      const shopCreate: FakerShop = new FakerShop({
         name: `Todelete${index + 1}`,
         shopGroup: 'Default',
         categoryRoot: 'Home',
@@ -249,7 +249,7 @@ describe('BO - Advanced Parameters - Multistore : Filter, sort and pagination sh
           const nonSortedTableFloat = nonSortedTable.map((text: string): number => parseFloat(text));
           const sortedTableFloat = sortedTable.map((text: string): number => parseFloat(text));
 
-          const expectedResult = await basicHelper.sortArrayNumber(nonSortedTableFloat);
+          const expectedResult = await utilsCore.sortArrayNumber(nonSortedTableFloat);
 
           if (test.args.sortDirection === 'up') {
             expect(sortedTableFloat).to.deep.equal(expectedResult);
@@ -257,7 +257,7 @@ describe('BO - Advanced Parameters - Multistore : Filter, sort and pagination sh
             expect(sortedTableFloat).to.deep.equal(expectedResult.reverse());
           }
         } else {
-          const expectedResult = await basicHelper.sortArray(nonSortedTable);
+          const expectedResult = await utilsCore.sortArray(nonSortedTable);
 
           if (test.args.sortDirection === 'up') {
             expect(sortedTable).to.deep.equal(expectedResult);

@@ -29,6 +29,8 @@ declare(strict_types=1);
 namespace PrestaShop\PrestaShop\Core\Domain\Carrier\Command;
 
 use PrestaShop\PrestaShop\Core\Domain\Carrier\ValueObject\CarrierId;
+use PrestaShop\PrestaShop\Core\Domain\Carrier\ValueObject\OutOfRangeBehavior;
+use PrestaShop\PrestaShop\Core\Domain\Carrier\ValueObject\ShippingMethod;
 
 /**
  * Command aim to edit carrier
@@ -42,7 +44,17 @@ class EditCarrierCommand
     private ?string $trackingUrl;
     private ?int $position;
     private ?bool $active;
+    private ?int $max_width;
+    private ?int $max_height;
+    private ?int $max_depth;
+    private ?float $max_weight;
+    private ?array $associatedGroupIds;
     private ?string $logoPathName;
+    private ?bool $hasAdditionalHandlingFee;
+    private ?bool $isFree;
+    private ?ShippingMethod $shippingMethod;
+    private ?int $idTaxRuleGroup;
+    private ?OutOfRangeBehavior $rangeBehavior;
 
     public function __construct(int $carrierId)
     {
@@ -132,6 +144,66 @@ class EditCarrierCommand
         return $this;
     }
 
+    public function getMaxWidth(): ?int
+    {
+        return $this->max_width ?? null;
+    }
+
+    public function setMaxWidth(?int $max_width): self
+    {
+        $this->max_width = $max_width;
+
+        return $this;
+    }
+
+    public function getMaxHeight(): ?int
+    {
+        return $this->max_height ?? null;
+    }
+
+    public function setMaxHeight(?int $max_height): self
+    {
+        $this->max_height = $max_height;
+
+        return $this;
+    }
+
+    public function getMaxDepth(): ?int
+    {
+        return $this->max_depth ?? null;
+    }
+
+    public function setMaxDepth(?int $max_depth): self
+    {
+        $this->max_depth = $max_depth;
+
+        return $this;
+    }
+
+    public function getMaxWeight(): ?float
+    {
+        return $this->max_weight ?? null;
+    }
+
+    public function setMaxWeight(?float $max_weight): self
+    {
+        $this->max_weight = $max_weight;
+
+        return $this;
+    }
+
+    public function getAssociatedGroupIds(): ?array
+    {
+        return $this->associatedGroupIds ?? null;
+    }
+
+    public function setAssociatedGroupIds(?array $associatedGroupIds): self
+    {
+        $this->associatedGroupIds = $associatedGroupIds;
+
+        return $this;
+    }
+
     public function getLogoPathName(): ?string
     {
         return $this->logoPathName ?? null;
@@ -140,6 +212,66 @@ class EditCarrierCommand
     public function setLogoPathName(?string $logoPathName): self
     {
         $this->logoPathName = $logoPathName;
+
+        return $this;
+    }
+
+    public function hasAdditionalHandlingFee(): ?bool
+    {
+        return $this->hasAdditionalHandlingFee ?? null;
+    }
+
+    public function setAdditionalHandlingFee(bool $hasAdditionalHandlingFee): self
+    {
+        $this->hasAdditionalHandlingFee = $hasAdditionalHandlingFee;
+
+        return $this;
+    }
+
+    public function isFree(): ?bool
+    {
+        return $this->isFree ?? null;
+    }
+
+    public function setIsFree(bool $isFree): self
+    {
+        $this->isFree = $isFree;
+
+        return $this;
+    }
+
+    public function getShippingMethod(): ?ShippingMethod
+    {
+        return $this->shippingMethod ?? null;
+    }
+
+    public function setShippingMethod(int $shippingMethod): self
+    {
+        $this->shippingMethod = new ShippingMethod($shippingMethod);
+
+        return $this;
+    }
+
+    public function getTaxRuleGroupId(): ?int
+    {
+        return $this->idTaxRuleGroup ?? null;
+    }
+
+    public function setIdTaxRuleGroup(int $idTaxRuleGroup): self
+    {
+        $this->idTaxRuleGroup = $idTaxRuleGroup;
+
+        return $this;
+    }
+
+    public function getRangeBehavior(): ?OutOfRangeBehavior
+    {
+        return $this->rangeBehavior ?? null;
+    }
+
+    public function setRangeBehavior(int $rangeBehavior): self
+    {
+        $this->rangeBehavior = new OutOfRangeBehavior($rangeBehavior);
 
         return $this;
     }

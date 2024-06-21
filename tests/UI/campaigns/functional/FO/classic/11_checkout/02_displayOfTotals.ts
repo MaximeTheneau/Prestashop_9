@@ -1,7 +1,5 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import date from '@utils/date';
 
 // Import common tests
 import {createCartRuleTest, deleteCartRuleTest} from '@commonTests/BO/catalog/cartRule';
@@ -15,15 +13,15 @@ import {blockCartModal} from '@pages/FO/classic/modal/blockCart';
 import {searchResultsPage} from '@pages/FO/classic/searchResults';
 import {loginPage} from '@pages/FO/classic/login';
 
-// Import data
-import CartRuleData from '@data/faker/cartRule';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
 import {
   dataCarriers,
   dataCustomers,
   dataProducts,
+  FakerCartRule,
+  utilsDate,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_FO_classic_checkout_displayOfTotals';
@@ -44,10 +42,10 @@ Post-condition:
 describe('FO - Checkout : Display of totals', async () => {
   let browserContext: BrowserContext;
   let page: Page;
-  const pastDate: string = date.getDateFormat('yyyy-mm-dd', 'past');
+  const pastDate: string = utilsDate.getDateFormat('yyyy-mm-dd', 'past');
 
   // Data to create cart rule with code
-  const cartRuleWithCodeData: CartRuleData = new CartRuleData({
+  const cartRuleWithCodeData: FakerCartRule = new FakerCartRule({
     name: 'kdo',
     code: '1234',
     highlight: true,
@@ -67,12 +65,12 @@ describe('FO - Checkout : Display of totals', async () => {
 
   describe('Display total', async () => {
     before(async function () {
-      browserContext = await helper.createBrowserContext(this.browser);
-      page = await helper.newTab(browserContext);
+      browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+      page = await utilsPlaywright.newTab(browserContext);
     });
 
     after(async () => {
-      await helper.closeBrowserContext(browserContext);
+      await utilsPlaywright.closeBrowserContext(browserContext);
     });
 
     it('should go to FO', async function () {

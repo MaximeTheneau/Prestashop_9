@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -9,12 +8,13 @@ import loginCommon from '@commonTests/BO/loginBO';
 import apiClientPage from 'pages/BO/advancedParameters/APIClient';
 import addNewApiClientPage from '@pages/BO/advancedParameters/APIClient/add';
 
-// Import data
-import APIClientData from '@data/faker/APIClient';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerAPIClient,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_advancedParameters_adminAPI_addAPIClient';
 
@@ -22,7 +22,7 @@ describe('BO - Advanced Parameter - API Client : Add API Client', async () => {
   let browserContext: BrowserContext;
   let page: Page;
 
-  const createAPIClient: APIClientData = new APIClientData({
+  const createAPIClient: FakerAPIClient = new FakerAPIClient({
     clientName: 'API Client XYZ',
     clientId: 'api-client-xyz',
     description: 'Description ABC',
@@ -34,12 +34,12 @@ describe('BO - Advanced Parameter - API Client : Add API Client', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe('BO - Advanced Parameter - API Client : CRUD', async () => {

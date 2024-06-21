@@ -72,7 +72,7 @@ class CarrierRepository extends AbstractMultiShopObjectModelRepository
         return new CarrierId($carrierId);
     }
 
-    public function updateInNewVersion(CarrierId $carrierId, Carrier $carrier): CarrierId
+    public function updateInNewVersion(CarrierId $carrierId, Carrier $carrier): Carrier
     {
         // Get old carrier to softly delete it
         /** @var Carrier $oldCarrier */
@@ -84,30 +84,58 @@ class CarrierRepository extends AbstractMultiShopObjectModelRepository
 
         // Then create a new carrier with a new id reference
         /* @var Carrier $newCarrier */
-        if ($carrier->name) {
+        if (null !== $carrier->name) {
             $newCarrier->name = $carrier->name;
         }
-        if ($carrier->grade) {
+        if (null !== $carrier->grade) {
             $newCarrier->grade = $carrier->grade;
         }
-        if ($carrier->url) {
+        if (null !== $carrier->url) {
             $newCarrier->url = $carrier->url;
         }
-        if ($carrier->position) {
+        if (null !== $carrier->position) {
             $newCarrier->position = $carrier->position;
         }
-        if ($carrier->active) {
+        if (null !== $carrier->active) {
             $newCarrier->active = $carrier->active;
         }
-        if ($carrier->delay) {
+        if (null !== $carrier->delay) {
             $newCarrier->delay = $carrier->delay;
         }
+        if (null !== $carrier->max_width) {
+            $newCarrier->max_width = $carrier->max_width;
+        }
+        if (null !== $carrier->max_height) {
+            $newCarrier->max_height = $carrier->max_height;
+        }
+        if (null !== $carrier->max_depth) {
+            $newCarrier->max_depth = $carrier->max_depth;
+        }
+        if (null !== $carrier->max_weight) {
+            $newCarrier->max_weight = $carrier->max_weight;
+        }
+        if (null !== $carrier->shipping_handling) {
+            $newCarrier->shipping_handling = $carrier->shipping_handling;
+        }
+        if (null !== $carrier->is_free) {
+            $newCarrier->is_free = $carrier->is_free;
+        }
+        if (null !== $carrier->shipping_method) {
+            $newCarrier->shipping_method = $carrier->shipping_method;
+        }
+        if (null !== $carrier->range_behavior) {
+            $newCarrier->range_behavior = $carrier->range_behavior;
+        }
+
         $newCarrier->deleted = false; // just to be sure...
 
         // Copy all others information like ranges, shops associated, ...
         $newCarrier->copyCarrierData($carrierId->getValue());
+
         $this->updateObjectModel($newCarrier, CannotUpdateCarrierException::class);
 
-        return new CarrierId($newCarrier->id);
+        $newCarrier->setGroups($oldCarrier->getAssociatedGroupIds());
+
+        return $newCarrier;
     }
 }

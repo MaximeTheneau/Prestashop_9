@@ -1,7 +1,5 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import mailHelper from '@utils/mailHelper';
 
 // Import common tests
 import {resetSmtpConfigTest, setupSmtpConfigTest} from '@commonTests/BO/advancedParameters/smtp';
@@ -16,16 +14,17 @@ import quickViewModal from '@pages/FO/hummingbird/modal/quickView';
 import blockCartModal from '@pages/FO/hummingbird/modal/blockCart';
 
 import {
-  // Import data
   dataCustomers,
   dataPaymentMethods,
   type FakerPaymentMethod,
+  type MailDev,
+  type MailDevEmail,
+  utilsMail,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import MailDevEmail from '@data/types/maildevEmail';
-import MailDev from 'maildev';
 
 const baseContext: string = 'functional_FO_hummingbird_checkout_payment_choosePaymentMethod';
 
@@ -43,11 +42,11 @@ describe('FO - Checkout - Payment : Choose a payment method', async () => {
   installHummingbird(`${baseContext}_preTest_1`);
 
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
-    mailListener = mailHelper.createMailListener();
-    mailHelper.startListener(mailListener);
+    mailListener = utilsMail.createMailListener();
+    utilsMail.startListener(mailListener);
 
     // get all emails
     // @ts-ignore
@@ -57,9 +56,9 @@ describe('FO - Checkout - Payment : Choose a payment method', async () => {
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
 
-    mailHelper.stopListener(mailListener);
+    utilsMail.stopListener(mailListener);
   });
 
   describe('Choose a payment method', async () => {

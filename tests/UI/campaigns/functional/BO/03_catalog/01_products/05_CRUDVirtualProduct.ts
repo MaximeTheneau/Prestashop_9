@@ -1,8 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
-import basicHelper from '@utils/basicHelper';
-import files from '@utils/files';
-import mailHelper from '@utils/mailHelper';
 import testContext from '@utils/testContext';
 
 // Import common tests
@@ -22,20 +18,22 @@ import {myAccountPage} from '@pages/FO/classic/myAccount';
 import {orderHistoryPage} from '@pages/FO/classic/myAccount/orderHistory';
 import {orderDetailsPage} from '@pages/FO/classic/myAccount/orderDetails';
 
-// Import data
-import type MailDevEmail from '@data/types/maildevEmail';
-
 import {
   boDashboardPage,
   dataCustomers,
   dataOrderStatuses,
   dataPaymentMethods,
   FakerProduct,
+  type MailDev,
+  type MailDevEmail,
+  utilsCore,
+  utilsFile,
+  utilsMail,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import type {BrowserContext, Page} from 'playwright';
 import {expect} from 'chai';
-import type MailDev from 'maildev';
 
 const baseContext: string = 'functional_BO_catalog_products_CRUDVirtualProduct';
 
@@ -74,19 +72,19 @@ describe('BO - Catalog - Products : CRUD virtual product', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
     if (newProductData.coverImage) {
-      await files.generateImage(newProductData.coverImage);
+      await utilsFile.generateImage(newProductData.coverImage);
     }
     if (newProductData.thumbImage) {
-      await files.generateImage(newProductData.thumbImage);
+      await utilsFile.generateImage(newProductData.thumbImage);
     }
-    await files.generateImage(newProductData.fileName);
+    await utilsFile.generateImage(newProductData.fileName);
 
     // Start listening to maildev server
-    mailListener = mailHelper.createMailListener();
-    mailHelper.startListener(mailListener);
+    mailListener = utilsMail.createMailListener();
+    utilsMail.startListener(mailListener);
 
     // Handle every new email
     mailListener.on('new', (email: MailDevEmail) => {
@@ -95,17 +93,17 @@ describe('BO - Catalog - Products : CRUD virtual product', async () => {
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
     if (newProductData.coverImage) {
-      await files.deleteFile(newProductData.coverImage);
+      await utilsFile.deleteFile(newProductData.coverImage);
     }
     if (newProductData.thumbImage) {
-      await files.deleteFile(newProductData.thumbImage);
+      await utilsFile.deleteFile(newProductData.thumbImage);
     }
-    await files.deleteFile(newProductData.fileName);
+    await utilsFile.deleteFile(newProductData.fileName);
 
     // Stop listening to maildev server
-    mailHelper.stopListener(mailListener);
+    utilsMail.stopListener(mailListener);
   });
 
   // 1 - Create product
@@ -176,7 +174,7 @@ describe('BO - Catalog - Products : CRUD virtual product', async () => {
     it('should check the product header details', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'checkProductHeaderDetails', baseContext);
 
-      const taxValue = await basicHelper.percentage(newProductData.priceTaxExcluded, newProductData.tax);
+      const taxValue = await utilsCore.percentage(newProductData.priceTaxExcluded, newProductData.tax);
 
       const productHeaderSummary = await createProductsPage.getProductHeaderSummary(page);
       await Promise.all([
@@ -210,7 +208,7 @@ describe('BO - Catalog - Products : CRUD virtual product', async () => {
     it('should check all product information', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'checkProductInformation', baseContext);
 
-      const taxValue = await basicHelper.percentage(newProductData.priceTaxExcluded, newProductData.tax);
+      const taxValue = await utilsCore.percentage(newProductData.priceTaxExcluded, newProductData.tax);
 
       const result = await foProductPage.getProductInformation(page);
       await Promise.all([
@@ -334,7 +332,7 @@ describe('BO - Catalog - Products : CRUD virtual product', async () => {
 
         await orderDetailsPage.clickOnDownloadLink(page);
 
-        const doesFileExist = await files.doesFileExist(newProductData.fileName, 5000);
+        const doesFileExist = await utilsFile.doesFileExist(newProductData.fileName, 5000);
         expect(doesFileExist, 'File is not downloaded!').eq(true);
       });
 
@@ -400,7 +398,7 @@ describe('BO - Catalog - Products : CRUD virtual product', async () => {
     it('should check the product header details', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'checkEditedProductHeaderDetails', baseContext);
 
-      const taxValue = await basicHelper.percentage(editProductData.priceTaxExcluded, editProductData.tax);
+      const taxValue = await utilsCore.percentage(editProductData.priceTaxExcluded, editProductData.tax);
 
       const productHeaderSummary = await createProductsPage.getProductHeaderSummary(page);
       await Promise.all([
@@ -430,7 +428,7 @@ describe('BO - Catalog - Products : CRUD virtual product', async () => {
     it('should check all product information', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'checkEditedProductInformation', baseContext);
 
-      const taxValue = await basicHelper.percentage(editProductData.priceTaxExcluded, editProductData.tax);
+      const taxValue = await utilsCore.percentage(editProductData.priceTaxExcluded, editProductData.tax);
 
       const result = await foProductPage.getProductInformation(page);
       await Promise.all([

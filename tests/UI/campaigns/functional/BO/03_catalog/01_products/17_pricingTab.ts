@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import common tests
@@ -16,14 +15,13 @@ import cartRulesPage from '@pages/BO/catalog/discounts';
 import {productPage as foProductPage} from '@pages/FO/classic/product';
 import catalogPriceRulesPage from '@pages/BO/catalog/discounts/catalogPriceRules';
 
-// Import data
-import CatalogPriceRuleData from '@data/faker/catalogPriceRule';
-
 import type {BrowserContext, Page} from 'playwright';
 import {expect} from 'chai';
 import {
   boDashboardPage,
+  FakerCatalogPriceRule,
   FakerProduct,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_catalog_products_pricingTab';
@@ -60,7 +58,7 @@ describe('BO - Catalog - Products : Pricing tab', async () => {
     },
   });
   // Data to create new catalog price rule
-  const newCatalogPriceRuleData: CatalogPriceRuleData = new CatalogPriceRuleData({
+  const newCatalogPriceRuleData: FakerCatalogPriceRule = new FakerCatalogPriceRule({
     currency: 'All currencies',
     country: 'All countries',
     group: 'All groups',
@@ -72,12 +70,12 @@ describe('BO - Catalog - Products : Pricing tab', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   // 1 - Create product

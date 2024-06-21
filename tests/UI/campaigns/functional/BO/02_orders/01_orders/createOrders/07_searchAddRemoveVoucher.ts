@@ -1,7 +1,4 @@
 // Import utils
-import basicHelper from '@utils/basicHelper';
-import date from '@utils/date';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import common tests
@@ -14,14 +11,15 @@ import addCartRulePage from '@pages/BO/catalog/discounts/add';
 import ordersPage from '@pages/BO/orders';
 import addOrderPage from '@pages/BO/orders/add';
 
-// Import data
-import CartRuleData from '@data/faker/cartRule';
-
 import {
   boDashboardPage,
   dataCarriers,
   dataCustomers,
   dataProducts,
+  FakerCartRule,
+  utilsCore,
+  utilsDate,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -52,9 +50,9 @@ describe('BO - Orders - Create order : Search, add and remove voucher', async ()
   let numberOfCartRules: number = 0;
   let addVoucherPage: Frame|null;
 
-  const pastDate: string = date.getDateFormat('yyyy-mm-dd', 'past');
+  const pastDate: string = utilsDate.getDateFormat('yyyy-mm-dd', 'past');
   // Data to create cart rule without code
-  const cartRuleWithoutCodeData: CartRuleData = new CartRuleData({
+  const cartRuleWithoutCodeData: FakerCartRule = new FakerCartRule({
     name: 'WithoutCode',
     dateFrom: pastDate,
     discountType: 'Amount',
@@ -65,7 +63,7 @@ describe('BO - Orders - Create order : Search, add and remove voucher', async ()
     },
   });
   // Data to create cart rule with code
-  const cartRuleWithCodeData: CartRuleData = new CartRuleData({
+  const cartRuleWithCodeData: FakerCartRule = new FakerCartRule({
     name: 'WithCode',
     code: 'Discount',
     discountType: 'Amount',
@@ -76,21 +74,21 @@ describe('BO - Orders - Create order : Search, add and remove voucher', async ()
     },
   });
   // Data to create disabled cart rule from add order page
-  const disabledCartRuleData: CartRuleData = new CartRuleData({
+  const disabledCartRuleData: FakerCartRule = new FakerCartRule({
     name: 'Disabled',
     status: false,
     discountType: 'Percent',
     discountPercent: 20,
   });
   // Data to create cart rule with gift
-  const cartRuleWithGiftData: CartRuleData = new CartRuleData({
+  const cartRuleWithGiftData: FakerCartRule = new FakerCartRule({
     name: 'WithGift',
     code: 'gift',
     freeGift: true,
     freeGiftProduct: dataProducts.demo_13,
   });
   // Data to create cart rule with Free shipping
-  const cartRuleFreeShippingData: CartRuleData = new CartRuleData({name: 'FreeShipping', code: 'free', freeShipping: true});
+  const cartRuleFreeShippingData: FakerCartRule = new FakerCartRule({name: 'FreeShipping', code: 'free', freeShipping: true});
 
   // Pre-condition: Create cart rule without code
   createCartRuleTest(cartRuleWithoutCodeData, `${baseContext}_preTest_1`);
@@ -99,12 +97,12 @@ describe('BO - Orders - Create order : Search, add and remove voucher', async ()
   createCartRuleTest(cartRuleWithCodeData, `${baseContext}_preTest_2`);
 
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   // 1 - Go to create order page
@@ -178,7 +176,7 @@ describe('BO - Orders - Create order : Search, add and remove voucher', async ()
     it('should check summary block', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'checkSummaryBlock1', baseContext);
 
-      const totalTaxes = await basicHelper.percentage(
+      const totalTaxes = await utilsCore.percentage(
         dataProducts.demo_12.priceTaxExcluded - cartRuleWithoutCodeData.discountAmount!.value,
         20,
       );
@@ -317,7 +315,7 @@ describe('BO - Orders - Create order : Search, add and remove voucher', async ()
     it('should check summary block', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'checkSummaryBlock2', baseContext);
 
-      const totalTaxes = await basicHelper.percentage(
+      const totalTaxes = await utilsCore.percentage(
         dataProducts.demo_12.priceTaxExcluded - cartRuleWithCodeData.discountAmount!.value,
         20,
       );
@@ -388,7 +386,7 @@ describe('BO - Orders - Create order : Search, add and remove voucher', async ()
       const isIframeVisible = await addOrderPage.clickOnAddVoucherButton(page);
       expect(isIframeVisible, 'Add cart rule frame is not visible!').to.eq(true);
 
-      addVoucherPage = await addOrderPage.getCreateVoucherIframe(page);
+      addVoucherPage = addOrderPage.getCreateVoucherIframe(page);
       expect(addVoucherPage).to.not.eq(null);
     });
 
@@ -416,7 +414,7 @@ describe('BO - Orders - Create order : Search, add and remove voucher', async ()
     it('should create the cart rule', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'CreateCArtRuleWithGift', baseContext);
 
-      addVoucherPage = await addOrderPage.getCreateVoucherIframe(page);
+      addVoucherPage = addOrderPage.getCreateVoucherIframe(page);
       expect(addVoucherPage).to.not.eq(null);
 
       await addCartRulePage.createEditCartRules(addVoucherPage!, cartRuleWithGiftData, false);

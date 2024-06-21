@@ -1,6 +1,4 @@
 // Import utils
-import basicHelper from '@utils/basicHelper';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -12,12 +10,14 @@ import multiStorePage from '@pages/BO/advancedParameters/multistore';
 import addShopUrlPage from '@pages/BO/advancedParameters/multistore/url/addURL';
 import shopUrlPage from '@pages/BO/advancedParameters/multistore/url';
 
-// Import data
-import ShopData from '@data/faker/shop';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerShop,
+  utilsCore,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_advancedParameters_multistore_filterSortAndPaginationShopUrls';
 
@@ -39,12 +39,12 @@ describe('BO - Advanced Parameters - Multistore : Filter, sort and pagination sh
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   // 2 : Go to multistore page
@@ -79,7 +79,7 @@ describe('BO - Advanced Parameters - Multistore : Filter, sort and pagination sh
   // 3 : Create 20 shop urls
   describe('Create 20 shop Urls', async () => {
     Array(20).fill(0, 0, 20).forEach((test: number, index: number) => {
-      const shopUrlData: ShopData = new ShopData({
+      const shopUrlData: FakerShop = new FakerShop({
         name: `ToDelete${index + 1}Shop`,
         shopGroup: '',
         categoryRoot: '',
@@ -224,7 +224,7 @@ describe('BO - Advanced Parameters - Multistore : Filter, sort and pagination sh
           const nonSortedTableFloat = nonSortedTable.map((text: string): number => parseFloat(text));
           const sortedTableFloat = sortedTable.map((text: string): number => parseFloat(text));
 
-          const expectedResult = await basicHelper.sortArrayNumber(nonSortedTableFloat);
+          const expectedResult = await utilsCore.sortArrayNumber(nonSortedTableFloat);
 
           if (test.args.sortDirection === 'up') {
             expect(sortedTableFloat).to.deep.equal(expectedResult);
@@ -232,7 +232,7 @@ describe('BO - Advanced Parameters - Multistore : Filter, sort and pagination sh
             expect(sortedTableFloat).to.deep.equal(expectedResult.reverse());
           }
         } else {
-          const expectedResult = await basicHelper.sortArray(nonSortedTable);
+          const expectedResult = await utilsCore.sortArray(nonSortedTable);
 
           if (test.args.sortDirection === 'up') {
             expect(sortedTable).to.deep.equal(expectedResult);

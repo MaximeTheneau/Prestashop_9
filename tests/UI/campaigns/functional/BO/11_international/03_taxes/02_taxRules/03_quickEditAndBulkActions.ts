@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -10,12 +9,13 @@ import taxesPage from '@pages/BO/international/taxes';
 import taxRulesPage from '@pages/BO/international/taxes/taxRules';
 import addTaxRulesPage from '@pages/BO/international/taxes/taxRules/add';
 
-// Import data
-import TaxRulesGroupData from '@data/faker/taxRulesGroup';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerTaxRulesGroup,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_international_taxes_taxRules_quickEditAndBulkActions';
 
@@ -29,17 +29,17 @@ describe('BO - International - Tax rules : Bulk actions', async () => {
   let page: Page;
   let numberOfTaxRules: number = 0;
 
-  const firstTaxRuleData: TaxRulesGroupData = new TaxRulesGroupData({name: 'toDelete1'});
-  const secondTaxRuleData: TaxRulesGroupData = new TaxRulesGroupData({name: 'toDelete2', enabled: false});
+  const firstTaxRuleData: FakerTaxRulesGroup = new FakerTaxRulesGroup({name: 'toDelete1'});
+  const secondTaxRuleData: FakerTaxRulesGroup = new FakerTaxRulesGroup({name: 'toDelete2', enabled: false});
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {

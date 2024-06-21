@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -10,13 +9,11 @@ import ordersPage from '@pages/BO/orders';
 import invoicesPage from '@pages/BO/orders/invoices';
 import orderPageTabListBlock from '@pages/BO/orders/view/tabListBlock';
 
-// Import data
-import InvoiceData from '@data/faker/invoice';
-
 import {
   boDashboardPage,
-  // Import data
   dataOrderStatuses,
+  FakerOrderInvoice,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -36,17 +33,17 @@ describe('BO - Orders - Invoices : Update invoice prefix and check the generated
   let page: Page;
   let fileName: string;
 
-  const invoiceData: InvoiceData = new InvoiceData();
+  const invoiceData: FakerOrderInvoice = new FakerOrderInvoice();
   const defaultPrefix: string = '#IN';
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {

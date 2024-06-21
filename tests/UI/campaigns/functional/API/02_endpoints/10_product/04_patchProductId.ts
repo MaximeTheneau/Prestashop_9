@@ -1,6 +1,4 @@
 // Import utils
-import api from '@utils/api';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -15,15 +13,15 @@ import productsPage from '@pages/BO/catalog/products';
 import createProductsPage from '@pages/BO/catalog/products/add';
 import descriptionTab from '@pages/BO/catalog/products/add/descriptionTab';
 
-// Import data
-import APIClientData from '@data/faker/APIClient';
-
 import {expect} from 'chai';
 import type {APIRequestContext, BrowserContext, Page} from 'playwright';
 import {
   boDashboardPage,
   dataLanguages,
+  FakerAPIClient,
   FakerProduct,
+  utilsAPI,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_API_endpoints_product_patchProductId';
@@ -37,7 +35,7 @@ describe('API : PATCH /product/{productId}', async () => {
   let idProduct: number;
 
   const clientScope: string = 'product_write';
-  const clientData: APIClientData = new APIClientData({
+  const clientData: FakerAPIClient = new FakerAPIClient({
     enabled: true,
     scopes: [
       clientScope,
@@ -57,14 +55,14 @@ describe('API : PATCH /product/{productId}', async () => {
 
   describe('API : PATCH /product/{productId}', async () => {
     before(async function () {
-      browserContext = await helper.createBrowserContext(this.browser);
-      page = await helper.newTab(browserContext);
+      browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+      page = await utilsPlaywright.newTab(browserContext);
 
-      apiContext = await helper.createAPIContext(global.API.URL);
+      apiContext = await utilsPlaywright.createAPIContext(global.API.URL);
     });
 
     after(async () => {
-      await helper.closeBrowserContext(browserContext);
+      await utilsPlaywright.closeBrowserContext(browserContext);
     });
 
     describe('BackOffice : Fetch the access token', async () => {
@@ -132,8 +130,8 @@ describe('API : PATCH /product/{productId}', async () => {
           },
         });
         expect(apiResponse.status()).to.eq(200);
-        expect(api.hasResponseHeader(apiResponse, 'Content-Type')).to.eq(true);
-        expect(api.getResponseHeader(apiResponse, 'Content-Type')).to.contains('application/json');
+        expect(utilsAPI.hasResponseHeader(apiResponse, 'Content-Type')).to.eq(true);
+        expect(utilsAPI.getResponseHeader(apiResponse, 'Content-Type')).to.contains('application/json');
 
         const jsonResponse = await apiResponse.json();
         expect(jsonResponse).to.have.property('access_token');
@@ -219,8 +217,8 @@ describe('API : PATCH /product/{productId}', async () => {
             data: dataPatch,
           });
           expect(apiResponse.status()).to.eq(200);
-          expect(api.hasResponseHeader(apiResponse, 'Content-Type')).to.eq(true);
-          expect(api.getResponseHeader(apiResponse, 'Content-Type')).to.contains('application/json');
+          expect(utilsAPI.hasResponseHeader(apiResponse, 'Content-Type')).to.eq(true);
+          expect(utilsAPI.getResponseHeader(apiResponse, 'Content-Type')).to.contains('application/json');
 
           const jsonResponse = await apiResponse.json();
           expect(jsonResponse).to.have.property(data.propertyName);

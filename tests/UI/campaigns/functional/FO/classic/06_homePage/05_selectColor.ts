@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import pages
@@ -10,6 +9,7 @@ import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
 import {
   dataProducts,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_FO_classic_homePage_selectColor';
@@ -20,12 +20,12 @@ describe('FO - Home Page : Select color on hover on product list', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should open the shop page', async function () {
@@ -59,6 +59,11 @@ describe('FO - Home Page : Select color on hover on product list', async () => {
   it('should check that the displayed product is white', async function () {
     await testContext.addContextItem(this, 'testIdentifier', 'checkDisplayedProduct', baseContext);
 
+    // @todo : https://github.com/PrestaShop/PrestaShop/issues/36356
+    if (global.INSTALL.DB_SERVER === 'mariadb') {
+      this.skip();
+    }
+
     const pageURL = await productPage.getCurrentURL(page);
     expect(pageURL).to.contains('color-white')
       .and.to.contains('size-m');
@@ -82,7 +87,7 @@ describe('FO - Home Page : Select color on hover on product list', async () => {
     expect(pageTitle).to.contains(dataProducts.demo_1.name);
   });
 
-  it('should check that the displayed product is white', async function () {
+  it('should check that the displayed product is black', async function () {
     await testContext.addContextItem(this, 'testIdentifier', 'checkDisplayedProduct2', baseContext);
 
     const pageURL = await productPage.getCurrentURL(page);

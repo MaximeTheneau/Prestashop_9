@@ -1,7 +1,5 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import date from '@utils/date';
 
 // Import common tests
 import {installHummingbird, uninstallHummingbird} from '@commonTests/BO/design/hummingbird';
@@ -16,12 +14,13 @@ import blockCartModal from '@pages/FO/hummingbird/modal/blockCart';
 import searchResultsPage from '@pages/FO/hummingbird/searchResults';
 import foLoginPage from '@pages/FO/hummingbird/login';
 
-// Import data
-import CartRuleData from '@data/faker/cartRule';
 import {
   dataCarriers,
   dataCustomers,
   dataProducts,
+  FakerCartRule,
+  utilsDate,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -47,10 +46,10 @@ Post-condition:
 describe('FO - Checkout : Display of totals', async () => {
   let browserContext: BrowserContext;
   let page: Page;
-  const pastDate: string = date.getDateFormat('yyyy-mm-dd', 'past');
+  const pastDate: string = utilsDate.getDateFormat('yyyy-mm-dd', 'past');
 
   // Data to create cart rule with code
-  const cartRuleWithCodeData: CartRuleData = new CartRuleData({
+  const cartRuleWithCodeData: FakerCartRule = new FakerCartRule({
     name: 'kdo',
     code: '1234',
     highlight: true,
@@ -73,12 +72,12 @@ describe('FO - Checkout : Display of totals', async () => {
 
   describe('Display total', async () => {
     before(async function () {
-      browserContext = await helper.createBrowserContext(this.browser);
-      page = await helper.newTab(browserContext);
+      browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+      page = await utilsPlaywright.newTab(browserContext);
     });
 
     after(async () => {
-      await helper.closeBrowserContext(browserContext);
+      await utilsPlaywright.closeBrowserContext(browserContext);
     });
 
     it('should go to FO', async function () {

@@ -1,6 +1,4 @@
 // Import utils
-import date from '@utils/date';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -14,12 +12,11 @@ import {loginPage as foLoginPage} from '@pages/FO/classic/login';
 import {myAccountPage} from '@pages/FO/classic/myAccount';
 import {vouchersPage as foVouchersPage} from '@pages/FO/classic/myAccount/vouchers';
 
-// Import data
-import CartRuleData from '@data/faker/cartRule';
-
 import {
-  // Import data
+  FakerCartRule,
   FakerCustomer,
+  utilsDate,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -42,11 +39,11 @@ describe('FO - Account : View vouchers', async () => {
   let page: Page;
 
   // Data to create a date format
-  const pastDate: string = date.getDateFormat('yyyy-mm-dd', 'past');
-  const futureDate: string = date.getDateFormat('yyyy-mm-dd', 'future');
-  const expirationDate: string = date.getDateFormat('mm/dd/yyyy', 'future');
+  const pastDate: string = utilsDate.getDateFormat('yyyy-mm-dd', 'past');
+  const futureDate: string = utilsDate.getDateFormat('yyyy-mm-dd', 'future');
+  const expirationDate: string = utilsDate.getDateFormat('mm/dd/yyyy', 'future');
   const customerData: FakerCustomer = new FakerCustomer({});
-  const firstCartRule: CartRuleData = new CartRuleData({
+  const firstCartRule: FakerCartRule = new FakerCartRule({
     code: 'promo20',
     customer: customerData,
     discountType: 'Percent',
@@ -54,7 +51,7 @@ describe('FO - Account : View vouchers', async () => {
     dateFrom: pastDate,
     dateTo: futureDate,
   });
-  const secondCartRule: CartRuleData = new CartRuleData({
+  const secondCartRule: FakerCartRule = new FakerCartRule({
     code: 'freeShipping',
     customer: customerData,
     freeShipping: true,
@@ -66,18 +63,18 @@ describe('FO - Account : View vouchers', async () => {
   createAccountTest(customerData, `${baseContext}_preTest_1`);
 
   // Pre-condition: Create 2 cart rules for the created customer
-  [firstCartRule, secondCartRule].forEach((cartRule: CartRuleData, index: number) => {
+  [firstCartRule, secondCartRule].forEach((cartRule: FakerCartRule, index: number) => {
     createCartRuleTest(cartRule, `${baseContext}_preTest_${index + 2}`);
   });
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe('View vouchers on FO', async () => {

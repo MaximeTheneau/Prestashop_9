@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import FO pages
@@ -14,8 +13,10 @@ import {createCartRuleTest, deleteCartRuleTest} from '@commonTests/BO/catalog/ca
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
 
-// Import data
-import CartRuleData from '@data/faker/cartRule';
+import {
+  FakerCartRule,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_FO_classic_cart_cart_addPromoCode';
 
@@ -24,7 +25,7 @@ describe('FO - cart : Add promo code', async () => {
   let page: Page;
 
   // Data to create cart rule
-  const newCartRuleData: CartRuleData = new CartRuleData({
+  const newCartRuleData: FakerCartRule = new FakerCartRule({
     name: 'reduction',
     code: 'reduc',
     discountType: 'Amount',
@@ -39,12 +40,12 @@ describe('FO - cart : Add promo code', async () => {
   createCartRuleTest(newCartRuleData, `${baseContext}_PreTest`);
 
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe('Check promo code block', async () => {

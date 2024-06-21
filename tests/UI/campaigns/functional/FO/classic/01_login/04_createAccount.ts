@@ -1,6 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
-import mailHelper from '@utils/mailHelper';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -12,16 +10,15 @@ import {homePage} from '@pages/FO/classic/home';
 import {loginPage} from '@pages/FO/classic/login';
 import {createAccountPage} from '@pages/FO/classic/myAccount/add';
 
-// Import data
-import type MailDevEmail from '@data/types/maildevEmail';
-
 import {
-  // Import data
   FakerCustomer,
+  type MailDev,
+  type MailDevEmail,
+  utilsMail,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
-import type MailDev from 'maildev';
 import type {BrowserContext, Page} from 'playwright';
 
 const baseContext: string = 'functional_FO_classic_login_createAccount';
@@ -36,11 +33,11 @@ describe('FO - Login : Create account', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
-    mailListener = mailHelper.createMailListener();
-    mailHelper.startListener(mailListener);
+    mailListener = utilsMail.createMailListener();
+    utilsMail.startListener(mailListener);
 
     // Handle every new email
     mailListener.on('new', (email: MailDevEmail) => {
@@ -49,8 +46,8 @@ describe('FO - Login : Create account', async () => {
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
-    mailHelper.stopListener(mailListener);
+    await utilsPlaywright.closeBrowserContext(browserContext);
+    utilsMail.stopListener(mailListener);
   });
 
   // Pre-Condition : Setup config SMTP

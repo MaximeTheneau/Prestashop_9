@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -13,9 +12,6 @@ import ordersPage from '@pages/BO/orders';
 import orderPageTabListBlock from '@pages/BO/orders/view/tabListBlock';
 import orderPageProductsBlock from '@pages/BO/orders/view/productsBlock';
 
-// Import data
-import MailDevEmail from '@data/types/maildevEmail';
-
 import {
   boDashboardPage,
   dataCustomers,
@@ -23,11 +19,13 @@ import {
   dataPaymentMethods,
   dataProducts,
   FakerOrder,
+  type MailDev,
+  type MailDevEmail,
+  utilsMail,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
-import MailDev from 'maildev';
-import mailHelper from '@utils/mailHelper';
 import type {BrowserContext, Page} from 'playwright';
 
 const baseContext: string = 'functional_BO_orders_orders_viewAndEditOrder_returnOrder';
@@ -77,12 +75,12 @@ describe('BO - Orders - View and edit order : Return an order', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
     // Start listening to maildev server
-    mailListener = mailHelper.createMailListener();
-    mailHelper.startListener(mailListener);
+    mailListener = utilsMail.createMailListener();
+    utilsMail.startListener(mailListener);
 
     // get all emails
     // @ts-ignore
@@ -92,10 +90,10 @@ describe('BO - Orders - View and edit order : Return an order', async () => {
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
 
     // Stop listening to maildev server
-    mailHelper.stopListener(mailListener);
+    utilsMail.stopListener(mailListener);
   });
 
   describe('Return an order', async () => {

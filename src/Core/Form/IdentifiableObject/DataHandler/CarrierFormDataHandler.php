@@ -57,6 +57,16 @@ class CarrierFormDataHandler implements FormDataHandlerInterface
             $data['general_settings']['tracking_url'] ?? '',
             0, // @todo: should not be in the add command but auto-computed or at least be optional
             (bool) $data['general_settings']['active'],
+            $data['general_settings']['group_access'],
+            (bool) $data['shipping_settings']['has_additional_handling_fee'],
+            (bool) $data['shipping_settings']['is_free'],
+            $data['shipping_settings']['shipping_method'],
+            $data['shipping_settings']['id_tax_rule_group'],
+            $data['shipping_settings']['range_behavior'],
+            $data['size_weight_settings']['max_width'] ?? 0,
+            $data['size_weight_settings']['max_height'] ?? 0,
+            $data['size_weight_settings']['max_depth'] ?? 0,
+            $data['size_weight_settings']['max_weight'] ?? 0,
             $logoPath,
         ));
 
@@ -72,6 +82,11 @@ class CarrierFormDataHandler implements FormDataHandlerInterface
             ->setGrade($data['general_settings']['grade'])
             ->setActive((bool) $data['general_settings']['active'])
             ->setTrackingUrl($data['general_settings']['tracking_url'] ?? '')
+            ->setMaxWidth($data['size_weight_settings']['max_width'] ?? null)
+            ->setMaxHeight($data['size_weight_settings']['max_height'] ?? null)
+            ->setMaxDepth($data['size_weight_settings']['max_depth'] ?? null)
+            ->setMaxWeight($data['size_weight_settings']['max_weight'] ?? null)
+            ->setAssociatedGroupIds($data['general_settings']['group_access'] ?? null)
         ;
         /** @var UploadedFile|null $logo */
         $logo = $data['general_settings']['logo'];

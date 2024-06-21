@@ -1,8 +1,5 @@
 // Import utils
-import files from '@utils/files';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import mailHelper from '@utils/mailHelper';
 
 // Import commonTests
 import {createProductTest, deleteProductTest} from '@commonTests/BO/catalog/product';
@@ -30,9 +27,6 @@ import {cartPage} from '@pages/FO/classic/cart';
 import {checkoutPage} from '@pages/FO/classic/checkout';
 import {orderConfirmationPage} from '@pages/FO/classic/checkout/orderConfirmation';
 
-// Import data
-import MailDevEmail from '@data/types/maildevEmail';
-
 import {
   boDashboardPage,
   dataCustomers,
@@ -40,12 +34,16 @@ import {
   dataOrderStatuses,
   dataPaymentMethods,
   FakerProduct,
+  type MailDev,
+  type MailDevEmail,
+  utilsFile,
+  utilsMail,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
 import {faker} from '@faker-js/faker';
 import type {BrowserContext, Page} from 'playwright';
-import MailDev from 'maildev';
 
 const baseContext: string = 'modules_ps_emailalerts_configuration_customerNotifications_enableDisableProductAvailability';
 
@@ -64,12 +62,12 @@ describe('Mail alerts module - Customer notifications - Enable/Disable product a
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
     // Start listening to maildev server
-    mailListener = mailHelper.createMailListener();
-    mailHelper.startListener(mailListener);
+    mailListener = utilsMail.createMailListener();
+    utilsMail.startListener(mailListener);
 
     // get all emails
     // @ts-ignore
@@ -79,11 +77,11 @@ describe('Mail alerts module - Customer notifications - Enable/Disable product a
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
-    await files.deleteFile('module.zip');
+    await utilsPlaywright.closeBrowserContext(browserContext);
+    await utilsFile.deleteFile('module.zip');
 
     // Stop listening to maildev server
-    mailHelper.stopListener(mailListener);
+    utilsMail.stopListener(mailListener);
   });
 
   // Pre-condition : Create product out of stock not allowed

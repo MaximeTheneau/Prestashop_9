@@ -1,6 +1,4 @@
 // Import utils
-import files from '@utils/files';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -21,14 +19,14 @@ import {orderConfirmationPage} from '@pages/FO/classic/checkout/orderConfirmatio
 import {quickViewModal} from '@pages/FO/classic/modal/quickView';
 import {blockCartModal} from '@pages/FO/classic/modal/blockCart';
 
-// Import data
-import MessageData from '@data/faker/message';
-
 import {
   boDashboardPage,
   dataCustomers,
   dataPaymentMethods,
   dataProducts,
+  FakerContactMessage,
+  utilsFile,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -53,7 +51,7 @@ describe('FO - Order confirmation : Contact us', async () => {
   let page: Page;
   const filename: string = 'testfile.txt';
 
-  const contactUsData: MessageData = new MessageData({
+  const contactUsData: FakerContactMessage = new FakerContactMessage({
     subject: 'Customer service',
     message: 'Test message to customer service for order reference',
     emailAddress: dataCustomers.johnDoe.email,
@@ -62,22 +60,22 @@ describe('FO - Order confirmation : Contact us', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
     // Create a file for upload in the "contact us" form
     await Promise.all([
-      files.createFile('.', filename, `test ${filename}`),
+      utilsFile.createFile('.', filename, `test ${filename}`),
     ]);
   });
 
   after(async () => {
     // Delete created file
     await Promise.all([
-      files.deleteFile(filename),
+      utilsFile.deleteFile(filename),
     ]);
 
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe('Go to shop FO and make a order', async () => {

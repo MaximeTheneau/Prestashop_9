@@ -1,8 +1,5 @@
 // Import utils
-import files from '@utils/files';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import mailHelper from '@utils/mailHelper';
 
 // Import commonTests
 import loginCommon from '@commonTests/BO/loginBO';
@@ -24,20 +21,21 @@ import {cartPage} from '@pages/FO/classic/cart';
 import {quickViewModal} from '@pages/FO/classic/modal/quickView';
 import {blockCartModal} from '@pages/FO/classic/modal/blockCart';
 
-// Import data
-import MessageData from '@data/faker/message';
-import type MailDevEmail from '@data/types/maildevEmail';
-
 import {
   boDashboardPage,
   dataCustomers,
   dataPaymentMethods,
   dataProducts,
+  FakerContactMessage,
   FakerEmployee,
+  type MailDev,
+  type MailDevEmail,
+  utilsFile,
+  utilsMail,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
-import MailDev from 'maildev';
 import type {BrowserContext, Page} from 'playwright';
 
 const baseContext: string = 'functional_BO_customerService_customerService_forwardMessage';
@@ -54,7 +52,7 @@ describe('BO - Customer Service : Forward message', async () => {
     permissionProfile: 'SuperAdmin',
   });
 
-  const contactUsData: MessageData = new MessageData({
+  const contactUsData: FakerContactMessage = new FakerContactMessage({
     subject: 'Customer service',
     emailAddress: employeeData.email,
     reference: '',
@@ -73,28 +71,28 @@ describe('BO - Customer Service : Forward message', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
     // Start listening to maildev server
-    mailListener = mailHelper.createMailListener();
-    mailHelper.startListener(mailListener);
+    mailListener = utilsMail.createMailListener();
+    utilsMail.startListener(mailListener);
 
     // Handle every new email
     mailListener.on('new', (email: MailDevEmail) => {
       newMail = email;
     });
 
-    await files.generateImage(`${contactUsData.fileName}.jpg`);
+    await utilsFile.generateImage(`${contactUsData.fileName}.jpg`);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
 
     // Stop listening to maildev server
-    mailHelper.stopListener(mailListener);
+    utilsMail.stopListener(mailListener);
 
-    await files.deleteFile(`${contactUsData.fileName}.jpg`);
+    await utilsFile.deleteFile(`${contactUsData.fileName}.jpg`);
   });
 
   describe('FO: Send message', async () => {
@@ -214,7 +212,7 @@ describe('BO - Customer Service : Forward message', async () => {
   });
 
   describe('BO: Forward message to another employee', async () => {
-    const forwardMessageData: MessageData = new MessageData({
+    const forwardMessageData: FakerContactMessage = new FakerContactMessage({
       employeeName: `${employeeData.firstName.slice(0, 1)}. ${employeeData.lastName}`,
       message: 'Forward message',
     });
@@ -282,7 +280,7 @@ describe('BO - Customer Service : Forward message', async () => {
   });
 
   describe('BO: Forward message to someone else', async () => {
-    const forwardMessageData: MessageData = new MessageData({
+    const forwardMessageData: FakerContactMessage = new FakerContactMessage({
       employeeName: 'Someone else',
       emailAddress: 'someoneelse@prestashop.com',
       message: 'checkThis',

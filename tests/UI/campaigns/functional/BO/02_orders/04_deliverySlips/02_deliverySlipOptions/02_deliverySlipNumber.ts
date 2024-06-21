@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -11,9 +10,6 @@ import deliverySlipsPage from '@pages/BO/orders/deliverySlips';
 import ordersPage from '@pages/BO/orders';
 import orderPageTabListBlock from '@pages/BO/orders/view/tabListBlock';
 
-// Import data
-import DeliverySlipOptionsData from '@data/faker/deliverySlipOptions';
-
 import {
   boDashboardPage,
   dataCustomers,
@@ -21,6 +17,8 @@ import {
   dataPaymentMethods,
   dataProducts,
   FakerOrder,
+  FakerOrderDeliverySlipOptions,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -52,19 +50,19 @@ describe('BO - Orders - Delivery slips : Update \'Delivery slip number\'', async
     ],
     paymentMethod: dataPaymentMethods.wirePayment,
   });
-  const deliverySlipData: DeliverySlipOptionsData = new DeliverySlipOptionsData();
+  const deliverySlipData: FakerOrderDeliverySlipOptions = new FakerOrderDeliverySlipOptions();
 
   // Pre-condition: Create order in FO
   createOrderByCustomerTest(orderByCustomerData, baseContext);
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {

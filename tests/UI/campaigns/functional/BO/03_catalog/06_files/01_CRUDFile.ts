@@ -1,6 +1,4 @@
 // Import utils
-import files from '@utils/files';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -10,12 +8,14 @@ import loginCommon from '@commonTests/BO/loginBO';
 import filesPage from '@pages/BO/catalog/files';
 import addFilePage from '@pages/BO/catalog/files/add';
 
-// Import data
-import FileData from '@data/faker/file';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerFile,
+  utilsFile,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_catalog_files_CRUDFile';
 
@@ -29,27 +29,27 @@ describe('BO - Catalog - Files : CRUD file', async () => {
   let browserContext: BrowserContext;
   let page: Page;
 
-  const createFileData: FileData = new FileData();
-  const editFileData: FileData = new FileData();
+  const createFileData: FakerFile = new FakerFile();
+  const editFileData: FakerFile = new FakerFile();
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
     await Promise.all([
-      files.createFile('.', createFileData.filename, `test ${createFileData.filename}`),
-      files.createFile('.', editFileData.filename, `test ${editFileData.filename}`),
+      utilsFile.createFile('.', createFileData.filename, `test ${createFileData.filename}`),
+      utilsFile.createFile('.', editFileData.filename, `test ${editFileData.filename}`),
     ]);
   });
 
   after(async () => {
     await Promise.all([
-      files.deleteFile(createFileData.filename),
-      files.deleteFile(editFileData.filename),
+      utilsFile.deleteFile(createFileData.filename),
+      utilsFile.deleteFile(editFileData.filename),
     ]);
 
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {
@@ -95,7 +95,7 @@ describe('BO - Catalog - Files : CRUD file', async () => {
 
       const filePath = await filesPage.viewFile(page, 1);
 
-      const found = await files.doesFileExist(filePath);
+      const found = await utilsFile.doesFileExist(filePath);
       expect(found, `${createFileData.filename} was not downloaded`).to.eq(true);
     });
   });
@@ -124,7 +124,7 @@ describe('BO - Catalog - Files : CRUD file', async () => {
 
       const filePath = await filesPage.viewFile(page, 1);
 
-      const found = await files.doesFileExist(filePath);
+      const found = await utilsFile.doesFileExist(filePath);
       expect(found, `${editFileData.filename} was not downloaded`).to.eq(true);
     });
   });

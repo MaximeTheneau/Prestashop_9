@@ -1,6 +1,4 @@
 // Import utils
-import basicHelper from '@utils/basicHelper';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -10,12 +8,14 @@ import loginCommon from '@commonTests/BO/loginBO';
 import cartRulesPage from '@pages/BO/catalog/discounts';
 import addCartRulePage from '@pages/BO/catalog/discounts/add';
 
-// Import data
-import CartRuleData from '@data/faker/cartRule';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerCartRule,
+  utilsCore,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_catalog_discounts_cartRules_sortAndPaginationCartRule';
 
@@ -32,12 +32,12 @@ describe('BO - Catalog - Discounts : Sort and pagination cart rules', async () =
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {
@@ -68,7 +68,7 @@ describe('BO - Catalog - Discounts : Sort and pagination cart rules', async () =
   describe('Create 21 cart rules', async () => {
     const creationTests: number[] = new Array(21).fill(0, 0, 21);
     creationTests.forEach((test: number, index: number) => {
-      const cartRuleData: CartRuleData = new CartRuleData({
+      const cartRuleData: FakerCartRule = new FakerCartRule({
         name: `todelete${index}`,
         discountType: 'Percent',
         discountPercent: 20,
@@ -204,7 +204,7 @@ describe('BO - Catalog - Discounts : Sort and pagination cart rules', async () =
           const nonSortedTableFloat: number[] = nonSortedTable.map((text: string): number => parseFloat(text));
           const sortedTableFloat: number[] = sortedTable.map((text: string): number => parseFloat(text));
 
-          const expectedResult: number[] = await basicHelper.sortArrayNumber(nonSortedTableFloat);
+          const expectedResult: number[] = await utilsCore.sortArrayNumber(nonSortedTableFloat);
 
           if (test.args.sortDirection === 'up') {
             expect(sortedTableFloat).to.deep.equal(expectedResult);
@@ -212,7 +212,7 @@ describe('BO - Catalog - Discounts : Sort and pagination cart rules', async () =
             expect(sortedTableFloat).to.deep.equal(expectedResult.reverse());
           }
         } else if (test.args.isDate) {
-          const expectedResult: string[] = await basicHelper.sortArrayDate(nonSortedTable);
+          const expectedResult: string[] = await utilsCore.sortArrayDate(nonSortedTable);
 
           if (test.args.sortDirection === 'up') {
             expect(sortedTable).to.deep.equal(expectedResult);
@@ -220,7 +220,7 @@ describe('BO - Catalog - Discounts : Sort and pagination cart rules', async () =
             expect(sortedTable).to.deep.equal(expectedResult.reverse());
           }
         } else {
-          const expectedResult: string[] = await basicHelper.sortArray(nonSortedTable);
+          const expectedResult: string[] = await utilsCore.sortArray(nonSortedTable);
 
           if (test.args.sortDirection === 'up') {
             expect(sortedTable).to.deep.equal(expectedResult);

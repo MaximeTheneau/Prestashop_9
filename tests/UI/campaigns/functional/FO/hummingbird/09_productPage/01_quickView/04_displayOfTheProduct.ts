@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import common tests
@@ -9,13 +8,12 @@ import {installHummingbird, uninstallHummingbird} from '@commonTests/BO/design/h
 import homePage from '@pages/FO/hummingbird/home';
 import quickViewModal from '@pages/FO/hummingbird/modal/quickView';
 
-// Import data
-import {ProductAttribute} from '@data/types/product';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
 import {
   dataProducts,
+  type ProductAttribute,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_FO_hummingbird_productPage_quickView_displayOfTheProduct';
@@ -43,12 +41,12 @@ describe('FO - Product page - Quick view : Display of the product', async () => 
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe(`Display of the product '${dataProducts.demo_6.name}`, async () => {

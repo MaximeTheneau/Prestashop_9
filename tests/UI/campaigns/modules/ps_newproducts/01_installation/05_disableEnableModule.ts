@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -10,13 +9,14 @@ import loginCommon from '@commonTests/BO/loginBO';
 import {homePage} from '@pages/FO/classic/home';
 // Import BO pages
 import {moduleManager as moduleManagerPage} from '@pages/BO/modules/moduleManager';
-import psNewProducts from '@pages/BO/modules/psNewProducts';
 
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
 import {
   boDashboardPage,
   dataModules,
+  modPsNewProductsBoMain,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'modules_ps_newproducts_installation_disableEnableModule';
@@ -27,12 +27,12 @@ describe('New products block module - Disable/Enable module', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe('Disable/Enable module', async () => {
@@ -80,7 +80,7 @@ describe('New products block module - Disable/Enable module', async () => {
     it('should go to the front office', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'goToFOAfterDisable', baseContext);
 
-      page = await psNewProducts.viewMyShop(page);
+      page = await modPsNewProductsBoMain.viewMyShop(page);
       await homePage.changeLanguage(page, 'en');
 
       const isHomePage = await homePage.isHomePage(page);
@@ -120,7 +120,7 @@ describe('New products block module - Disable/Enable module', async () => {
     it('should go to the front office', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'goToFOAfterEnable', baseContext);
 
-      page = await psNewProducts.viewMyShop(page);
+      page = await modPsNewProductsBoMain.viewMyShop(page);
       await homePage.changeLanguage(page, 'en');
 
       const isHomePage = await homePage.isHomePage(page);

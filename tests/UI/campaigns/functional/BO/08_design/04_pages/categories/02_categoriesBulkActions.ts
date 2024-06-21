@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -9,12 +8,13 @@ import loginCommon from '@commonTests/BO/loginBO';
 import pagesPage from '@pages/BO/design/pages';
 import addPageCategoryPage from '@pages/BO/design/pages/pageCategory/add';
 
-// Import data
-import CMSCategoryData from '@data/faker/CMScategory';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import {boDashboardPage} from '@prestashop-core/ui-testing';
+import {
+  boDashboardPage,
+  FakerCMSCategory,
+  utilsPlaywright,
+} from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_BO_design_pages_categories_categoriesBulkActions';
 
@@ -26,18 +26,18 @@ describe('BO - Design - Pages : Enable/Disable/Delete categories with Bulk Actio
   let page: Page;
   let numberOfCategories: number = 0;
 
-  const firstCategoryData: CMSCategoryData = new CMSCategoryData({name: 'todelete'});
-  const secondCategoryData: CMSCategoryData = new CMSCategoryData({name: 'todelete'});
+  const firstCategoryData: FakerCMSCategory = new FakerCMSCategory({name: 'todelete'});
+  const secondCategoryData: FakerCMSCategory = new FakerCMSCategory({name: 'todelete'});
   const categoriesTableName: string = 'cms_page_category';
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {
@@ -70,7 +70,7 @@ describe('BO - Design - Pages : Enable/Disable/Delete categories with Bulk Actio
 
   // 1 : Create 2 categories In BO
   describe('Create 2 categories', async () => {
-    [firstCategoryData, secondCategoryData].forEach((categoryToCreate: CMSCategoryData, index: number) => {
+    [firstCategoryData, secondCategoryData].forEach((categoryToCreate: FakerCMSCategory, index: number) => {
       it('should go to add new page category', async function () {
         await testContext.addContextItem(this, 'testIdentifier', `goToAddCategory${index + 1}`, baseContext);
 

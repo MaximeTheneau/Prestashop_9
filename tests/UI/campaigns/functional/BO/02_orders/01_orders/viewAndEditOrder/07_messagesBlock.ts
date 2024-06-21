@@ -1,6 +1,4 @@
 // Import utils
-import date from '@utils/date';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -19,9 +17,6 @@ import {loginPage as foLoginPage} from '@pages/FO/classic/login';
 import {myAccountPage} from '@pages/FO/classic/myAccount';
 import {orderHistoryPage} from '@pages/FO/classic/myAccount/orderHistory';
 
-// Import data
-import type {OrderHistoryMessage, OrderMessage} from '@data/types/order';
-
 import {
   boDashboardPage,
   dataCustomers,
@@ -29,6 +24,10 @@ import {
   dataPaymentMethods,
   dataProducts,
   FakerOrder,
+  type OrderHistoryMessage,
+  type OrderMessage,
+  utilsDate,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -54,7 +53,7 @@ describe('BO - Orders - View and edit order : Check messages block', async () =>
   let page: Page;
   let textMessage: string = '';
 
-  const today: string = date.getDateFormat('mm/dd/yyyy');
+  const today: string = utilsDate.getDateFormat('mm/dd/yyyy');
   const messageData: OrderMessage = {orderMessage: 'Delay', displayToCustomer: true, message: ''};
   const secondMessageData: OrderMessage = {orderMessage: 'Delay', displayToCustomer: false, message: 'test message visibility'};
   // New order by customer data
@@ -75,12 +74,12 @@ describe('BO - Orders - View and edit order : Check messages block', async () =>
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   // 1 - Go to view order page

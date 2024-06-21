@@ -1,7 +1,5 @@
 // Import utils
 import testContext from '@utils/testContext';
-import helper from '@utils/helpers';
-import mailHelper from '@utils/mailHelper';
 
 // Import common tests
 import {deleteCustomerTest} from '@commonTests/BO/customers/customer';
@@ -17,17 +15,16 @@ import checkoutPage from '@pages/FO/hummingbird/checkout';
 import passwordReminderPage from '@pages/FO/hummingbird/passwordReminder';
 import myAccountPage from '@pages/FO/hummingbird/myAccount';
 
-// Import data
-import type MailDevEmail from '@data/types/maildevEmail';
-
 import {
-  // Import data
   FakerCustomer,
+  type MailDev,
+  type MailDevEmail,
+  utilsMail,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import type MailDev from 'maildev';
 
 const baseContext: string = 'functional_FO_hummingbird_checkout_personalInformation_passwordReminder';
 
@@ -71,11 +68,11 @@ describe('FO - Checkout - Personal information : Password reminder', async () =>
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
-    mailListener = mailHelper.createMailListener();
-    mailHelper.startListener(mailListener);
+    mailListener = utilsMail.createMailListener();
+    utilsMail.startListener(mailListener);
     // Handle every new email
     mailListener.on('new', (email: MailDevEmail) => {
       newMail = email;
@@ -83,8 +80,8 @@ describe('FO - Checkout - Personal information : Password reminder', async () =>
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
-    mailHelper.stopListener(mailListener);
+    await utilsPlaywright.closeBrowserContext(browserContext);
+    utilsMail.stopListener(mailListener);
   });
 
   describe('Update customer password', async () => {

@@ -1,7 +1,5 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import files from '@utils/files';
 
 // import common tests
 import loginCommon from '@commonTests/BO/loginBO';
@@ -22,9 +20,6 @@ import homePage from '@pages/FO/hummingbird/home';
 import productPage from '@pages/FO/hummingbird/product';
 import searchResultsPage from '@pages/FO/hummingbird/searchResults';
 
-// Import data
-import {ProductAttribute} from '@data/types/product';
-
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
 import {
@@ -32,6 +27,9 @@ import {
   FakerAttribute,
   FakerAttributeValue,
   FakerProduct,
+  type ProductAttribute,
+  utilsFile,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_FO_hummingbird_productPage_productPage_changeCombination';
@@ -69,25 +67,25 @@ describe('FO - Product page - Product page : Change combination', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
     if (newProductData.coverImage) {
-      await files.generateImage(newProductData.coverImage);
+      await utilsFile.generateImage(newProductData.coverImage);
     }
     if (newProductData.thumbImage) {
-      await files.generateImage(newProductData.thumbImage);
+      await utilsFile.generateImage(newProductData.thumbImage);
     }
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
 
     if (newProductData.coverImage) {
-      await files.deleteFile(newProductData.coverImage);
+      await utilsFile.deleteFile(newProductData.coverImage);
     }
     if (newProductData.thumbImage) {
-      await files.deleteFile(newProductData.thumbImage);
+      await utilsFile.deleteFile(newProductData.thumbImage);
     }
   });
 

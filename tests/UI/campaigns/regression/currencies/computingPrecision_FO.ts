@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Common tests login BO
@@ -25,21 +24,20 @@ import {loginPage as foLoginPage} from '@pages/FO/classic/login';
 import {productPage} from '@pages/FO/classic/product';
 import {searchResultsPage} from '@pages/FO/classic/searchResults';
 
-// Import data
-import CartRuleData from '@data/faker/cartRule';
-
 import {
   boDashboardPage,
   dataCurrencies,
   dataCustomers,
   dataPaymentMethods,
   dataProducts,
+  FakerCartRule,
   FakerOrder,
+  FakerSqlQuery,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import SqlQueryData from '@data/faker/sqlQuery';
 
 const baseContext: string = 'regression_currencies_computingPrecision_FO';
 
@@ -64,13 +62,13 @@ describe(
     let browserContext: BrowserContext;
     let page: Page;
 
-    const percentCartRule: CartRuleData = new CartRuleData({
+    const percentCartRule: FakerCartRule = new FakerCartRule({
       name: 'discount15',
       code: 'discount15',
       discountType: 'Percent',
       discountPercent: 15,
     });
-    const giftCartRule: CartRuleData = new CartRuleData({
+    const giftCartRule: FakerCartRule = new FakerCartRule({
       name: 'freeGiftMug',
       code: 'freeMug',
       discountType: 'None',
@@ -78,7 +76,7 @@ describe(
       freeGiftProduct: dataProducts.demo_13,
     });
     // Create sql query data to get last order discount and total price
-    const sqlQueryData = new SqlQueryData({
+    const sqlQueryData: FakerSqlQuery = new FakerSqlQuery({
       name: 'Discount and ATI from last order',
       sqlQuery: '',
     });
@@ -99,12 +97,12 @@ describe(
 
     // before and after functions
     before(async function () {
-      browserContext = await helper.createBrowserContext(this.browser);
-      page = await helper.newTab(browserContext);
+      browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+      page = await utilsPlaywright.newTab(browserContext);
     });
 
     after(async () => {
-      await helper.closeBrowserContext(browserContext);
+      await utilsPlaywright.closeBrowserContext(browserContext);
     });
 
     it('should login in BO', async function () {

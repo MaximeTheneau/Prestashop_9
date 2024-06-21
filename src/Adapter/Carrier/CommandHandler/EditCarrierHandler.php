@@ -57,38 +57,90 @@ class EditCarrierHandler extends AbstractCarrierHandler implements EditCarrierHa
     public function handle(EditCarrierCommand $command): CarrierId
     {
         $carrier = $this->carrierRepository->get($command->getCarrierId());
-        if ($command->getName()) {
+
+        // General information
+        if (null !== $command->getName()) {
             $carrier->name = $command->getName();
         }
-        if ($command->getGrade()) {
+        if (null !== $command->getGrade()) {
             $carrier->grade = $command->getGrade();
         }
-        if ($command->getTrackingUrl()) {
+        if (null !== $command->getTrackingUrl()) {
             $carrier->url = $command->getTrackingUrl();
         }
-        if ($command->getPosition()) {
+        if (null !== $command->getPosition()) {
             $carrier->position = $command->getPosition();
         }
-        if ($command->getActive()) {
+        if (null !== $command->getActive()) {
             $carrier->active = $command->getActive();
         }
-        if ($command->getLocalizedDelay()) {
+        if (null !== $command->getLocalizedDelay()) {
             $carrier->delay = $command->getLocalizedDelay();
         }
+        if (null !== $command->getMaxWidth()) {
+            $carrier->max_width = $command->getMaxWidth();
+        }
+        if (null !== $command->getMaxHeight()) {
+            $carrier->max_height = $command->getMaxHeight();
+        }
+        if (null !== $command->getMaxDepth()) {
+            $carrier->max_depth = $command->getMaxDepth();
+        }
+        if (null !== $command->getMaxWeight()) {
+            $carrier->max_weight = $command->getMaxWeight();
+        }
 
-        $this->carrierValidator->validate($carrier);
-
-        $carrierId = $this->carrierRepository->updateInNewVersion($command->getCarrierId(), $carrier);
-
-        if ($command->getLogoPathName() !== null) {
-            $this->carrierLogoFileUploader->deleteOldFile($carrierId->getValue());
-
-            if ($command->getLogoPathName() !== '') {
-                $this->carrierValidator->validateLogoUpload($command->getLogoPathName());
-                $this->carrierLogoFileUploader->upload($command->getLogoPathName(), $carrierId->getValue());
+        // Shipping information
+        if (null !== $command->hasAdditionalHandlingFee()) {
+            $carrier->shipping_handling = $command->hasAdditionalHandlingFee();
+        } else {
+            // If carrier is free, we should not have shipping handling
+            if ($command->isFree()) {
+                $carrier->shipping_handling = false;
             }
         }
 
-        return $carrierId;
+        if (null !== $command->isFree()) {
+            $carrier->is_free = $command->isFree();
+        } else {
+            // If carrier has additional handling fee, we should not have free shipping enabled
+            if ($command->hasAdditionalHandlingFee()) {
+                $carrier->is_free = false;
+            }
+        }
+
+        if ($command->getShippingMethod()) {
+            $carrier->shipping_method = $command->getShippingMethod()->getValue();
+        }
+
+        if (null !== $command->getRangeBehavior()) {
+            $carrier->range_behavior = (bool) $command->getRangeBehavior()->getValue();
+        }
+
+        $this->carrierValidator->validate($carrier);
+        if ($command->getAssociatedGroupIds()) {
+            $this->carrierValidator->validateGroupsExist($command->getAssociatedGroupIds());
+        }
+        if ($command->getLogoPathName() !== null && $command->getLogoPathName() !== '') {
+            $this->carrierValidator->validateLogoUpload($command->getLogoPathName());
+        }
+
+        $newCarrier = $this->carrierRepository->updateInNewVersion($command->getCarrierId(), $carrier);
+        if ($command->getAssociatedGroupIds()) {
+            $newCarrier->setGroups($command->getAssociatedGroupIds());
+        }
+        if (null !== $command->getTaxRuleGroupId()) {
+            $newCarrier->setTaxRulesGroup($command->getTaxRuleGroupId());
+        }
+
+        if ($command->getLogoPathName() !== null) {
+            $this->carrierLogoFileUploader->deleteOldFile($newCarrier->id);
+
+            if ($command->getLogoPathName() !== '') {
+                $this->carrierLogoFileUploader->upload($command->getLogoPathName(), $newCarrier->id);
+            }
+        }
+
+        return new CarrierId($newCarrier->id);
     }
 }

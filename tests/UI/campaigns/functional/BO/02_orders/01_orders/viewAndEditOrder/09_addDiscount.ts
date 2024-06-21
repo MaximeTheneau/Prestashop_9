@@ -1,5 +1,4 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import common tests
@@ -20,12 +19,13 @@ import {
   dataPaymentMethods,
   dataProducts,
   FakerOrder,
+  FakerOrderShipping,
+  type ProductDiscount,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-import OrderShippingData from '@data/faker/orderShipping';
-import type {ProductDiscount} from '@data/types/product';
 
 const baseContext: string = 'functional_BO_orders_orders_viewAndEditOrder_addDiscount';
 
@@ -120,7 +120,7 @@ describe('BO - Orders - View and edit order : Add discount', async () => {
     type: 'Free shipping',
     value: '',
   };
-  const shippingDetailsData: OrderShippingData = new OrderShippingData({
+  const shippingDetailsData: FakerOrderShipping = new FakerOrderShipping({
     trackingNumber: '0523698',
     carrier: dataCarriers.myCarrier.name,
     carrierID: dataCarriers.myCarrier.id,
@@ -132,12 +132,12 @@ describe('BO - Orders - View and edit order : Add discount', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {

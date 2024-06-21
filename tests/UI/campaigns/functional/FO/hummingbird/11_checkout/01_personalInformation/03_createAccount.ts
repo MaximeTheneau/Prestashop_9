@@ -1,7 +1,5 @@
 // Import utils
 import testContext from '@utils/testContext';
-import helper from '@utils/helpers';
-import mailHelper from '@utils/mailHelper';
 
 // Import common tests
 import {resetSmtpConfigTest, setupSmtpConfigTest} from '@commonTests/BO/advancedParameters/smtp';
@@ -16,17 +14,17 @@ import checkoutPage from '@pages/FO/hummingbird/checkout';
 import orderConfirmationPage from '@pages/FO/hummingbird/checkout/orderConfirmation';
 
 import {
-  // Import data
   dataPaymentMethods,
   FakerAddress,
   FakerCustomer,
+  type MailDev,
+  type MailDevEmail,
+  utilsMail,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
-
-import MailDevEmail from '@data/types/maildevEmail';
-import MailDev from 'maildev';
 
 const baseContext: string = 'functional_FO_hummingbird_checkout_personalInformation_createAccount';
 
@@ -58,11 +56,11 @@ describe('FO - Checkout - Personal information : Create account', async () => {
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
 
-    mailListener = mailHelper.createMailListener();
-    mailHelper.startListener(mailListener);
+    mailListener = utilsMail.createMailListener();
+    utilsMail.startListener(mailListener);
 
     // get all emails
     // @ts-ignore
@@ -72,8 +70,8 @@ describe('FO - Checkout - Personal information : Create account', async () => {
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
-    mailHelper.stopListener(mailListener);
+    await utilsPlaywright.closeBrowserContext(browserContext);
+    utilsMail.stopListener(mailListener);
   });
 
   // Pre-Condition : Setup config SMTP

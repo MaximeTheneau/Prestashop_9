@@ -1,7 +1,5 @@
 // Import utils
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
-import basicHelper from '@utils/basicHelper';
 
 // Import FO pages
 import {cartPage} from '@pages/FO/classic/cart';
@@ -17,11 +15,11 @@ import {createCartRuleTest, deleteCartRuleTest} from '@commonTests/BO/catalog/ca
 import {expect} from 'chai';
 import type {BrowserContext, Page} from 'playwright';
 
-// Import data
-import CartRuleData from '@data/faker/cartRule';
-
 import {
   dataProducts,
+  FakerCartRule,
+  utilsCore,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 const baseContext: string = 'functional_FO_classic_cart_cart_displayDiscount';
@@ -31,7 +29,7 @@ describe('FO - cart : Display discount', async () => {
   let page: Page;
 
   // Data to create first cart rule
-  const firstCartRuleData: CartRuleData = new CartRuleData({
+  const firstCartRuleData: FakerCartRule = new FakerCartRule({
     name: 'test1',
     code: '123456',
     quantity: 100,
@@ -42,7 +40,7 @@ describe('FO - cart : Display discount', async () => {
     product: dataProducts.demo_8.name,
   });
   // Data to create second cart rule
-  const secondCartRuleData: CartRuleData = new CartRuleData({
+  const secondCartRuleData: FakerCartRule = new FakerCartRule({
     name: 'test2',
     code: '123456789',
     quantity: 100,
@@ -64,12 +62,12 @@ describe('FO - cart : Display discount', async () => {
   createCartRuleTest(secondCartRuleData, `${baseContext}_PreTest_2`);
 
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   describe('Display discount', async () => {
@@ -157,7 +155,7 @@ describe('FO - cart : Display discount', async () => {
     it('should check the discount value', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'checkDiscountValue1', baseContext);
 
-      const discount = await basicHelper.percentage(dataProducts.demo_9.finalPrice, firstCartRuleData.discountPercent!);
+      const discount = await utilsCore.percentage(dataProducts.demo_9.finalPrice, firstCartRuleData.discountPercent!);
 
       const discountValue = await cartPage.getDiscountValue(page);
       expect(discountValue).to.equal(-discount.toFixed(2));
@@ -166,7 +164,7 @@ describe('FO - cart : Display discount', async () => {
     it('should check the total after the discount', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'checkTotalAfterDiscount1', baseContext);
 
-      const discount = await basicHelper.percentage(dataProducts.demo_9.finalPrice, firstCartRuleData.discountPercent!);
+      const discount = await utilsCore.percentage(dataProducts.demo_9.finalPrice, firstCartRuleData.discountPercent!);
 
       const totalAfterDiscount = await cartPage.getATIPrice(page);
       expect(totalAfterDiscount.toString()).to.equal((dataProducts.demo_9.finalPrice * 2 - discount).toFixed(2));
@@ -191,7 +189,7 @@ describe('FO - cart : Display discount', async () => {
     it('should check the total after the discount', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'checkTotalAfterDiscount', baseContext);
 
-      const firstDiscount = await basicHelper.percentage(dataProducts.demo_9.finalPrice, firstCartRuleData.discountPercent!);
+      const firstDiscount = await utilsCore.percentage(dataProducts.demo_9.finalPrice, firstCartRuleData.discountPercent!);
 
       const totalAfterDiscount = await cartPage.getATIPrice(page);
       expect(totalAfterDiscount.toString())
@@ -209,7 +207,7 @@ describe('FO - cart : Display discount', async () => {
     it('should check the total', async function () {
       await testContext.addContextItem(this, 'testIdentifier', 'checkTotal3', baseContext);
 
-      const discount = await basicHelper.percentage(dataProducts.demo_9.finalPrice, firstCartRuleData.discountPercent!);
+      const discount = await utilsCore.percentage(dataProducts.demo_9.finalPrice, firstCartRuleData.discountPercent!);
 
       const totalAfterDiscount = await cartPage.getATIPrice(page);
       expect(totalAfterDiscount.toString()).to.equal((dataProducts.demo_9.finalPrice * 2 - discount).toFixed(2));

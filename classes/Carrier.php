@@ -113,7 +113,7 @@ class CarrierCore extends ObjectModel
     /** @var int maximum package deep managed by the transporter */
     public $max_depth;
 
-    /** @var int maximum package weight managed by the transporter */
+    /** @var float maximum package weight managed by the transporter */
     public $max_weight;
 
     /** @var int grade of the shipping delay (0 for longest, 9 for shortest) */
@@ -893,6 +893,11 @@ class CarrierCore extends ObjectModel
             SELECT id_group
             FROM ' . _DB_PREFIX_ . 'carrier_group
             WHERE id_carrier=' . (int) $this->id);
+    }
+
+    public function getAssociatedGroupIds(): array
+    {
+        return array_map(fn ($group) => (int) $group['id_group'], $this->getGroups());
     }
 
     /**

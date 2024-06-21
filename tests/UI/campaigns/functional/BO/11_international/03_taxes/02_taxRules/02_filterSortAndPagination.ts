@@ -1,6 +1,4 @@
 // Import utils
-import basicHelper from '@utils/basicHelper';
-import helper from '@utils/helpers';
 import testContext from '@utils/testContext';
 
 // Import commonTests
@@ -11,13 +9,12 @@ import taxesPage from '@pages/BO/international/taxes';
 import taxRulesPage from '@pages/BO/international/taxes/taxRules';
 import addTaxRulesPage from '@pages/BO/international/taxes/taxRules/add';
 
-// Import data
-import TaxRulesGroupData from '@data/faker/taxRulesGroup';
-
 import {
   boDashboardPage,
-  // Import data
   dataTaxRules,
+  FakerTaxRulesGroup,
+  utilsCore,
+  utilsPlaywright,
 } from '@prestashop-core/ui-testing';
 
 import {expect} from 'chai';
@@ -39,12 +36,12 @@ describe('BO - International - Tax rules : Filter, sort and pagination', async (
 
   // before and after functions
   before(async function () {
-    browserContext = await helper.createBrowserContext(this.browser);
-    page = await helper.newTab(browserContext);
+    browserContext = await utilsPlaywright.createBrowserContext(this.browser);
+    page = await utilsPlaywright.newTab(browserContext);
   });
 
   after(async () => {
-    await helper.closeBrowserContext(browserContext);
+    await utilsPlaywright.closeBrowserContext(browserContext);
   });
 
   it('should login in BO', async function () {
@@ -186,7 +183,7 @@ describe('BO - International - Tax rules : Filter, sort and pagination', async (
           const nonSortedTableFloat: number[] = nonSortedTable.map((text: string): number => parseFloat(text));
           const sortedTableFloat: number[] = sortedTable.map((text: string): number => parseFloat(text));
 
-          const expectedResult = await basicHelper.sortArrayNumber(nonSortedTableFloat);
+          const expectedResult = await utilsCore.sortArrayNumber(nonSortedTableFloat);
 
           if (test.args.sortDirection === 'up') {
             expect(sortedTableFloat).to.deep.equal(expectedResult);
@@ -194,7 +191,7 @@ describe('BO - International - Tax rules : Filter, sort and pagination', async (
             expect(sortedTableFloat).to.deep.equal(expectedResult.reverse());
           }
         } else {
-          const expectedResult = await basicHelper.sortArray(nonSortedTable);
+          const expectedResult = await utilsCore.sortArray(nonSortedTable);
 
           if (test.args.sortDirection === 'up') {
             expect(sortedTable).to.deep.equal(expectedResult);
@@ -211,7 +208,7 @@ describe('BO - International - Tax rules : Filter, sort and pagination', async (
 
   creationTests.forEach((test: number, index: number) => {
     describe(`Create tax rule n°${index + 1} in BO`, async () => {
-      const taxRuleData = new TaxRulesGroupData({name: `todelete${index}`});
+      const taxRuleData: FakerTaxRulesGroup = new FakerTaxRulesGroup({name: `todelete${index}`});
 
       it('should go to add new tax rule group page', async function () {
         await testContext.addContextItem(this, 'testIdentifier', `goToAddTaxRuleGroupPage${index}`, baseContext);
