@@ -67,6 +67,16 @@ services:
     networks:
       - prestashop-network
 
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    networks:
+      - prestashop-network
+
 networks:
   prestashop-network:
     name: prestashop-network

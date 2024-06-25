@@ -1,14 +1,14 @@
 name: maxime_t
-display_name: Maxime T.
+display_name: maxime_t
 version: 1.0.0
 author:
-  name: "Maxime T."
-  email: "maxime@theneaumaxime.fr"
-  url: "https://theneaumaxime.fr"
+  name: "PrestaShop SA and Contributors"
+  email: "contact@prestashop.com"
+  url: "https://www.prestashop-project.org"
 
 meta:
   compatibility:
-    from: 1.7.0.0
+    from: 9.0.0
     to: ~
 
   available_layouts:
@@ -32,10 +32,7 @@ assets:
 
 # The following lines are showing how to load assets in your page
 # Uncomment and change value to start loading css or js files
-  all:
-    - id: tailwind
-      path: assets/css/tailwind.css
-      media: all
+#  css:
 #  all:
 #    - id: custom-lib-style
 #    path: assets/css/custom-lib.css

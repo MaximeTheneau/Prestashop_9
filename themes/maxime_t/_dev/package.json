@@ -16,6 +16,8 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.2",
     "autoprefixer": "^10.4.13",
+    "bootstrap": "4.0.0-alpha.5",
+    "bootstrap-touchspin": "^3.1.1",
     "bourbon": "^4.2.6",
     "css-loader": "^6.7.1",
     "csso-webpack-plugin": "^2.0.0-beta.3",
@@ -27,9 +29,13 @@
     "eslint-plugin-import": "^2.20.0",
     "expose-loader": "^3.0.0",
     "flexibility": "^1.0.5",
+    "jquery": "^3.5.1",
+    "jquery-touchswipe": "^1.6",
+    "jquery.browser": "^0.1.0",
     "manrope": "^2.0.0",
     "material-design-icons-iconfont": "^5.0.1",
     "mini-css-extract-plugin": "^1.6.0",
+    "node-sass": "^7.0.3",
     "postcss-flexibility": "^3.0.0",
     "postcss-loader": "^6.1.1",
     "sass-loader": "^13.0.0",
@@ -44,11 +50,7 @@
     "webpack-sources": "^0.1.0"
   },
   "dependencies": {
-    "postcss": "^8.4.38",
-    "sass": "^1.77.5",
-    "sprintf-js": "^1.1.2",
-    "stylelint-config-standard": "^36.0.0",
-    "stylelint-config-tailwindcss": "^0.0.7",
-    "tailwindcss": "^3.4.4"
+    "tailwindcss": "^3.4.4",
+    "sprintf-js": "^1.1.2"
   }
 }
