@@ -22,6 +22,7 @@
  * @copyright Since 2007 PrestaShop SA and Contributors
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
  *}
+
 {block name='header_banner'}
   <div class="header-banner">
     {hook h='displayBanner'}
@@ -61,11 +62,11 @@
         <div class="col-md-2 hidden-sm-down" id="_desktop_logo">
           {if $shop.logo_details}
             {if $page.page_name == 'index'}
-              <h1>
-                {renderLogo}
-              </h1>
+            <h1 class="shop-name">{$shop.name}</h1>
             {else}
-              {renderLogo}
+              <a href="/" title="{$shop.name}">
+                  <span class="shop-name">{$shop.name}</span>
+              </a>
             {/if}
           {/if}
         </div>
