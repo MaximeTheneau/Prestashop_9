@@ -137,6 +137,8 @@
             </div>
 
 
+              {hook h='DisplayStockNotification' product=$product}
+
             {block name='hook_display_reassurance'}
               {hook h='DisplayReassurance'}
             {/block}
