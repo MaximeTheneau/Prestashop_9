@@ -25,6 +25,8 @@
 {extends file=$layout}
 
 {block name='head' append}
+
+
   <meta property="og:type" content="product">
   {if $product.cover}
     <meta property="og:image" content="{$product.cover.large.url}">
@@ -134,8 +136,9 @@
 
             </div>
 
+
             {block name='hook_display_reassurance'}
-              {hook h='displayReassurance'}
+              {hook h='DisplayReassurance'}
             {/block}
 
             {block name='product_tabs'}

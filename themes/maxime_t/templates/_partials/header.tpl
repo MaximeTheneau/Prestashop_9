@@ -34,12 +34,7 @@
     <div class="container">
       <div class="row">
         <div class="hidden-sm-down">
-          <div class="col-md-5 col-xs-12">
-            {hook h='displayNav1'}
-          </div>
-          <div class="col-md-7 right-nav">
-              {hook h='displayNav2'}
-          </div>
+
         </div>
         <div class="hidden-md-up text-sm-center mobile">
           <div class="float-xs-left" id="menu-icon">
@@ -70,7 +65,11 @@
             {/if}
           {/if}
         </div>
-        <div class="header-top-right col-md-10 col-sm-12 position-static">
+          <div class="col-md-7 right-nav">
+              {hook h='displayNav1'}
+          </div>
+        <div class="flex justify-between w-full items-center	">
+          {hook h='displayNav2'}
           {hook h='displayTop'}
         </div>
       </div>

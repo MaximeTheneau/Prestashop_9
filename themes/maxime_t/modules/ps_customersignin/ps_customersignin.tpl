@@ -49,7 +49,6 @@
         rel="nofollow"
       >
         <i class="material-icons">&#xE7FF;</i>
-        <span class="hidden-sm-down">{l s='Sign in' d='Shop.Theme.Actions'}</span>
       </a>
     {/if}
   </div>
