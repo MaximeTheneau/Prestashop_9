@@ -23,7 +23,7 @@
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
  *}
 {if $product.show_price}
-  <div class="product-prices js-product-prices">
+  <div class="product-prices js-product-prices d-flex ">
     {block name='product_discount'}
       {if $product.has_discount}
         <div class="product-discount">
@@ -35,7 +35,7 @@
 
     {block name='product_price'}
       <div
-        class="product-price h5  {if $product.has_discount}has-discount{/if}">
+        class="product-price h5   {if $product.has_discount}has-discount{/if} ">
 
         <div class="current-price">
           <span class='current-price-value' content="{$product.rounded_display_price}">
