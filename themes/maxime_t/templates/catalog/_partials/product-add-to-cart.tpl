@@ -22,6 +22,8 @@
  * @copyright Since 2007 PrestaShop SA and Contributors
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
  *}
+      {if $product.quantity !== 0}
+
 <div class="product-add-to-cart js-product-add-to-cart">
   {if !$configuration.is_catalog}
     <span class="control-label">{l s='Quantity' d='Shop.Theme.Catalog'}</span>
@@ -64,7 +66,6 @@
         {hook h='displayProductActions' product=$product}
       </div>
     {/block}
-      {if $product.quantity !== 0}
 
         {block name='product_availability'}
           <span id="product-availability" class="js-product-availability">
@@ -80,7 +81,6 @@
             {/if}
           </span>
         {/block}
-      {/if}
     {block name='product_minimal_quantity'}
       <p class="product-minimal-quantity js-product-minimal-quantity">
         {if $product.minimal_quantity > 1}
@@ -94,3 +94,4 @@
     {/block}
   {/if}
 </div>
+      {/if}
