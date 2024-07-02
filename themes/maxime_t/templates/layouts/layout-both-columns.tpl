@@ -57,7 +57,6 @@
         {/block}
 
         {hook h="displayWrapperTop"}
-        <div class="container">
           {block name='breadcrumb'}
             {include file='_partials/breadcrumb.tpl'}
           {/block}
@@ -93,7 +92,6 @@
               </div>
             {/block}
           </div>
-        </div>
         {hook h="displayWrapperBottom"}
       </section>
 
