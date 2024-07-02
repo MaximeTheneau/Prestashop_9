@@ -82,8 +82,6 @@
 
 {block name='javascript_head'}
   {include file="_partials/javascript.tpl" javascript=$javascript.head vars=$js_custom_vars}
-    <script src="{$theme_dir}js/cart.js"></script>
-
 {/block}
 
 {block name='hook_header'}

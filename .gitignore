@@ -155,6 +155,7 @@ modules/*
 override/*
 themes/*/
 themes/classic
+!theme/maxime_t
 !themes/_core
 !themes/_libraries
 
