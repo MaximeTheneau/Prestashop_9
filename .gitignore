@@ -151,10 +151,16 @@ app/config/config.php
 
 # Themes, modules and overrides
 
+!theme/maxime_t
+!module/navbar
+!module/stocknotification
+
+modules/*
 override/*
 themes/*/
-!theme/maxime_t
-
+themes/classic
+!themes/_core
+!themes/_libraries
 
 # Vendors and dependencies
 
