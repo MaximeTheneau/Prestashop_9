@@ -151,10 +151,10 @@ app/config/config.php
 
 # Themes, modules and overrides
 
-!theme/maxime_t
-!module/navbar
-!module/stocknotification
-!module/cookiergpd
+!themes/maxime_t
+!modules/navbar
+!modules/stocknotification
+!modules/cookiergpd
 
 modules/*
 override/*
