@@ -23,7 +23,7 @@
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
  *}
 {block name='product_miniature_item'}
-<div class="js-product product{if !empty($productClasses)} {$productClasses}{/if}">
+<li class="js-product product{if !empty($productClasses)} {$productClasses}{/if}">
   <article class="product-miniature js-product-miniature" data-id-product="{$product.id_product}" data-id-product-attribute="{$product.id_product_attribute}">
     <div class="thumbnail-container">
       <div class="thumbnail-top">
@@ -59,20 +59,22 @@
           {/if}
         {/block}
 
-{**        <div class="highlighted-informations{if !$product.main_variants} no-variants{/if}">
-          {block name='quick_view'}
-            <a class="quick-view js-quick-view" href="#" data-link-action="quickview">
-              <i class="material-icons search">&#xE8B6;</i> {l s='Quick view' d='Shop.Theme.Actions'}
-            </a>
-          {/block}
+        {**
+          <div class="highlighted-informations{if !$product.main_variants} no-variants{/if}">
+            {block name='quick_view'}
+              <a class="quick-view js-quick-view" href="#" data-link-action="quickview">
+                <i class="material-icons search">&#xE8B6;</i> {l s='Quick view' d='Shop.Theme.Actions'}
+              </a>
+            {/block}
 
-          {block name='product_variants'}
-            {if $product.main_variants}
-              {include file='catalog/_partials/variant-links.tpl' variants=$product.main_variants}
-            {/if}
-          {/block}
-        </div>*}
-      </div>
+            {block name='product_variants'}
+              {if $product.main_variants}
+                {include file='catalog/_partials/variant-links.tpl' variants=$product.main_variants}
+              {/if}
+            {/block}
+          </div>
+        *}
+     </div>
 
       <div class="product-description">
         {block name='product_name'}
@@ -123,5 +125,5 @@
       {include file='catalog/_partials/product-flags.tpl'}
     </div>
   </article>
-</div>
+</li>
 {/block}

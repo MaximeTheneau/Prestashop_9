@@ -54,7 +54,7 @@
     <meta content="{$product.url}">
 
     <div class="row product-container js-product-container">
-      <div class="col-md-6">
+      <div class="col-md-8">
         {block name='page_content_container'}
           <section class="page-content" id="content">
             {block name='page_content'}
@@ -72,7 +72,7 @@
           </section>
         {/block}
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           {block name='page_header_container'}
             {block name='page_header'}
               <h1 class="h1">{block name='page_title'}{$product.name}{/block}</h1>
@@ -82,6 +82,24 @@
             {include file='catalog/_partials/product-prices.tpl'}
           {/block}
 
+
+      </div>
+    </div>
+
+    {block name='product_accessories'}
+      {if $accessories}
+        <section class="product-accessories clearfix">
+          <p class="h5 text-uppercase">{l s='You might also like' d='Shop.Theme.Catalog'}</p>
+          <div class="products row">
+            {foreach from=$accessories item="product_accessory" key="position"}
+              {block name='product_miniature'}
+                {include file='catalog/_partials/miniatures/product.tpl' product=$product_accessory position=$position productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
+              {/block}
+            {/foreach}
+          </div>
+        </section>
+      {/if}
+    {/block}
           <div class="product-information">
             {block name='product_description_short'}
               <div id="product-description-short-{$product.id}" class="product-description">{$product.description_short nofilter}</div>
@@ -225,26 +243,8 @@
                  {/foreach}
               </div>
             </div>
-          {/block}
-        </div>
-      </div>
-    </div>
-
-    {block name='product_accessories'}
-      {if $accessories}
-        <section class="product-accessories clearfix">
-          <p class="h5 text-uppercase">{l s='You might also like' d='Shop.Theme.Catalog'}</p>
-          <div class="products row">
-            {foreach from=$accessories item="product_accessory" key="position"}
-              {block name='product_miniature'}
-                {include file='catalog/_partials/miniatures/product.tpl' product=$product_accessory position=$position productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
-              {/block}
-            {/foreach}
+            {/block}
           </div>
-        </section>
-      {/if}
-    {/block}
-
     {block name='product_footer'}
       {hook h='displayFooterProduct' product=$product category=$category}
     {/block}
