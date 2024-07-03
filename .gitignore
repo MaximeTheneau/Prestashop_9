@@ -154,6 +154,7 @@ app/config/config.php
 !theme/maxime_t
 !module/navbar
 !module/stocknotification
+!module/cookiesRgpd
 
 modules/*
 override/*
