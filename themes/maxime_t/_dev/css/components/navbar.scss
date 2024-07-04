@@ -1,0 +1,132 @@
+
+#wrapper{
+padding-top: 3.375rem;
+}
+.navbar {
+  position: fixed;
+  width: 100%;
+  min-height: 3.375rem;
+  z-index: 2;
+  background-color: #ffffff0a;
+  color: #0b0c0e; /* Exemple de couleur */
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  font-size: 1rem;
+  &__toogle{
+    display: flex;
+    align-items: flex-end;
+    & i{
+      padding: 0 !important;
+    }
+    &__icon{
+      margin: 0 1rem 0 0 ;
+    }
+
+  }
+  & .cart-title{
+    margin: 0 1rem;
+  }
+}
+
+.navbar__logo {
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.navbar i {
+  font-size: 1rem; /* Taille de police */
+  padding: 0.5rem;
+  border-radius: 25%;
+  cursor: pointer;
+}
+
+.navbar__menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: fixed;
+  padding-top: 3.8rem;
+  z-index: 1;
+  top: 0%;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  animation: menu 0.5s ease;
+  visibility: visible;
+  overflow: hidden !important;
+}
+
+.navbar__menu ul {
+  width: 100%;
+  padding: 0 1rem;
+}
+
+.navbar__menu__list-item {
+  list-style-type: none;
+  border-bottom: #0b0c0e 1px solid;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 1rem;
+}
+
+.navbar__menu--hidden {
+  display: none;
+  visibility: hidden;
+  transition: opacity 0.5s ease;
+}
+
+.navbar__menu a {
+  color: #0b0c0e;
+  text-decoration: none;
+}
+
+.navbar__menu a:hover {
+  color: #0051AD; /* Couleur du lien */
+}
+
+.search_block_top form{
+  display: flex;
+  align-items: center;
+  & i{
+    padding: 0 0 0 0 !important;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+      opacity: 0;
+      left: -100%;
+  }
+  30% {
+      opacity: 0.5;
+      left: 0;
+  }
+  100% {
+      left: 0;
+  }
+}
+
+@keyframes menu {
+  0% {
+      top: -100%;
+  }
+  100% {
+      top: 0;
+  }
+}
+
+@media screen and (max-width: 720px) {
+  .navbar__menu form {
+      width: 100%;
+  }
+}
+
+
+.navbar::after {
+  content: "";
+  display: none;
+  clear: none;
+}

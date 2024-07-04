@@ -150,19 +150,16 @@ app/config/parameters.old.yml
 app/config/config.php
 
 # Themes, modules and overrides
-
-!themes/maxime_t
-!modules/navbar
-!modules/stocknotification
-!modules/cookiergpd
-
-modules/*
 override/*
 themes/*/
 themes/classic
 !themes/_core
 !themes/_libraries
 
+!themes/maxime_t
+!modules/navbar
+!modules/stocknotification
+!modules/cookiesrgpd
 # Vendors and dependencies
 
 bower_components/

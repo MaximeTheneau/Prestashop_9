@@ -1,0 +1,106 @@
+/* stylelint-disable */
+@import '_variables.scss';
+@import "~manrope/complete/font.css";
+
+@font-face {
+  font-family: "Material Icons";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(~material-design-icons-iconfont/dist/fonts/MaterialIcons-Regular.eot); /* For IE6-8 */
+  src:
+    local("Material Icons"), local("MaterialIcons-Regular"), url(~material-design-icons-iconfont/dist/fonts/MaterialIcons-Regular.woff2)
+    format("woff2"), url(~material-design-icons-iconfont/dist/fonts/MaterialIcons-Regular.woff)
+    format("woff"), url(~material-design-icons-iconfont/dist/fonts/MaterialIcons-Regular.ttf)
+    format("truetype");
+}
+/* stylelint-enable */
+
+.material-icons {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  font-family: "Material Icons", Arial, sans-serif;
+  font-size: 24px; /* Preferred icon size */
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  vertical-align: middle;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: "liga";
+}
+
+@font-face {
+  font-family: 'iconTheneauM';
+  src: url('../font/icon/iconTheneauM.woff2') format('woff2'),
+    url('../font/icon/iconTheneauM.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  font-family: 'iconTheneauM' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-navbar:before {
+  content: "\e900";
+}
+.icon-x:before {
+  content: "\e902";
+}
+.icon-facebook:before {
+  content: "\e1001";
+}
+.icon-instagram:before {
+  content: "\e906";
+}
+.icon-confirmation:before {
+  content: "\e904";
+}
+.icon-error:before {
+  content: "\e905";
+}
+.icon-open:before {
+  content: "\e903";
+}
+.icon-paper-plane:before {
+  content: "\e901";
+}
+.icon-phone:before {
+  content: "\e907";
+}
+.icon-twitter:before {
+  content: "\e946";
+}
+.icon-linkedin:before {
+  content: "\e94b";
+}
+.icon-location:before {
+  content: "\e94c";
+}
+.icon-facebook:before {
+  content: "\ea96";
+}
