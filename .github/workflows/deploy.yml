@@ -30,3 +30,6 @@ jobs:
             php bin/console cache:clear
             cd themes/maxime_t/_dev
             pnpm run build
+
+
+
