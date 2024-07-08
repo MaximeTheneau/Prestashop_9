@@ -1,7 +1,7 @@
 <nav role="navigation">
   <div class="navbar">
     <a href="{$link->getPageLink('index')}" class="navbar__logo">
-      Une Taupe Chez Vous
+        {$shop_name}
     </a>
     <div class="navbar__toogle" id="navbar-toggle" >
       {hook h='displayTop'}

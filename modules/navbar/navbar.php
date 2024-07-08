@@ -42,7 +42,7 @@ class Navbar extends Module
     public function hookDisplayNavbarCustom($params)
     {
         $this->context->smarty->assign(array(
-            // Assign any variables you need for the template
+            'shop_name' => Configuration::get('PS_SHOP_NAME'),
         ));
 
         return $this->display(__FILE__, 'views/templates/hook/navbar.tpl');

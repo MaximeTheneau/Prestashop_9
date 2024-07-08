@@ -18,8 +18,14 @@ ul {
   list-style: none;
 }
 
+a {
+  color: $black;
+  text-decoration: none;
+}
+
 a:hover {
-  color: $brand-primary;
+  color: $black;
+  font-weight: bold;
   text-decoration: none;
 }
 

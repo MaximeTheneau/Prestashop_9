@@ -142,6 +142,7 @@ themes/*-chunk.js.map
 config/defines_custom.inc.php
 config/settings.inc.php
 config/settings.old.php
+config/defines.inc.php
 config/xml/*
 config/themes/*
 !config/xml/themes/default.xml
