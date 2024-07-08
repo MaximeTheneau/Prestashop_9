@@ -28,7 +28,6 @@
               {/if}
             </li>
         {/foreach}
-      </ul>
     {/if}
 {/function}
 
