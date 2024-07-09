@@ -4,7 +4,7 @@ html {
 }
 
 body {
-  font-family: Manrope, sans-serif;
+  font-family: 'fontGeneral', sans-serif;
   font-size: $base-font-size;
   line-height: 1.25em;
   color: $gray-darker;
@@ -65,6 +65,14 @@ label .color,
       border: 1px solid $radio-border-color;
     }
   }
+}
+
+h1,h2,h3,h4,h5,h6{
+  font-family: 'fontTitle', sans-serif;
+  font-weight: 600;
+  margin: 1rem 0;
+  width: 100%;
+  display: inline-block;
 }
 
 .h1,
@@ -628,3 +636,8 @@ input[type="number"] {
 .ui-autocomplete.ui-front {
   z-index: 999;
 }
+
+.w-30{
+  width: 30%;
+}
+
