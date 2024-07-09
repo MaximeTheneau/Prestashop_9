@@ -85,8 +85,8 @@ global_settings:
         - blockreassurance
       displayFooter:
         - ps_linklist
-        - ps_customeraccountlinks
       displayFooterAfter:
+        - ps_customeraccountlinks
         - blockreassurance
       displayFooterProduct:
         - productcomments
