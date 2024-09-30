@@ -58,6 +58,7 @@
     {include file="_partials/pagination-seo.tpl"}
   {/block}
 
+
   {block name='head_open_graph'}
     <meta property="og:title" content="{$page.meta.title}" />
     <meta property="og:description" content="{$page.meta.description}" />
